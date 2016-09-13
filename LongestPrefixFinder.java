@@ -66,7 +66,9 @@ public class LongestPrefixFinder {
 		iterA.forEachRemaining(current -> {
 			if(iterB.hasNext() && cmp.compare(iterB.next(), current) == 0) {
 				result.add(current);
-			}
+			} else {
+                return result;
+            }
 		});
 		return result;
 	}
