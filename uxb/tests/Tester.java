@@ -50,8 +50,8 @@ public class Tester {
 	    	badBuilder = null;
 	    	new Builder(null).build();
 	        fail("Expected an exception to be thrown.");
-	    } catch (IllegalStateException e) {
-	    	assertTrue(e.getMessage().contains(AbstractDevice.Builder.NULL_VERSION_NUMBER_MESSAGE));
+	    } catch (NullPointerException e) {
+	    	assertTrue(e.getMessage().equals(AbstractDevice.Builder.NULL_VERSION_NUMBER_MESSAGE));
 	    }
 	}
 	
@@ -61,7 +61,7 @@ public class Tester {
 	    	badBuilder.build();
 	        fail("Expected an exception to be thrown.");
 	    } catch (IllegalStateException e) {
-	    	assertTrue(e.getMessage().contains(Hub.Builder.MISSING_COMPUTER_CONNECTOR_MESSAGE));
+	    	assertTrue(e.getMessage().equals(Hub.Builder.MISSING_COMPUTER_CONNECTOR_MESSAGE));
 	    }
 	}
 	
@@ -72,7 +72,7 @@ public class Tester {
 	    	badBuilder.connectors(connectors).build();
 	        fail("Expected an exception to be thrown.");
 	    } catch (IllegalStateException e) {
-	        assertTrue(e.getMessage().contains(Hub.Builder.MISSING_PERIPHERAL_CONNECTOR_MESSAGE));
+	        assertTrue(e.getMessage().equals(Hub.Builder.MISSING_PERIPHERAL_CONNECTOR_MESSAGE));
 	    }
 	}
 	

@@ -33,8 +33,6 @@ public abstract class AbstractDevice<T extends AbstractDevice.Builder<T>> implem
 	 * after the device is created are final and cannot be changed.
 	 */
 	public static abstract class Builder<T> {
-		public static final String NOT_VALID_MESSAGE = "Not valid for the following reasons:";
-		public static final String SPACE = " ";
 		public static final String NULL_VERSION_NUMBER_MESSAGE = "The version is null.";
 		
 		private Optional<Integer> version;
