@@ -67,8 +67,8 @@ public class LongestPrefixFinder {
 			if(iterB.hasNext() && cmp.compare(iterB.next(), current) == 0) {
 				result.add(current);
 			} else {
-                return result;
-            }
+				// LOGIC ERROR THIS RETURNS ALL MATCHES NOT PREFIX
+			}
 		});
 		return result;
 	}

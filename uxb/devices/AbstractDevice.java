@@ -1,6 +1,7 @@
 package eecs293.uxb.devices;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -9,20 +10,45 @@ import java.util.stream.Collectors;
 import eecs293.uxb.Connector;
 import eecs293.uxb.Connector.Type;
 
-public class AbstractDevice<T extends AbstractDevice.Builder<T>> implements Device {
+/**
+ * 
+ * An abstract class that devices should extend. Concrete device classes
+ * should also extend the inner Builder class as a way to create devices.
+ * 
+ * @author Sarah Whelan
+ *
+ */
+public abstract class AbstractDevice<T extends AbstractDevice.Builder<T>> implements Device {
 	
-	private static final Optional<Integer> DEFAULT_VERSION = Optional.of(1);
+	private final Integer version;
 	private final Optional<Integer> productCode;
 	private final Optional<BigInteger> serialNumber;
-	private final Optional<Integer> version; 
-	private final List<Connector.Type> connectors;
+	private final List<Connector> connectors;
 	
+	/**
+	 * Builds an device. Devices that extend AbstractDevice also should extend this
+	 * inner Builder class as well.
+	 * 
+	 * This class is used to set values before the Device is created as the values
+	 * after the device is created are final and cannot be changed.
+	 */
 	public static abstract class Builder<T> {
+		public static final String NOT_VALID_MESSAGE = "Not valid for the following reasons:";
+		public static final String SPACE = " ";
+		public static final String NULL_VERSION_NUMBER_MESSAGE = "The version is null.";
+		
 		private Optional<Integer> version;
 		private Optional<Integer> productCode;
 		private Optional<BigInteger> serialNumber;
 		private List<Type> connectorTypes;
 		
+		/**
+		 * 
+		 * Creates a builder with specified version, empty optionals for 
+		 * productCode and serialNumber, and an empty list of Connector.Type.
+		 * 
+		 * @param version can be null but the builder is invalid if version is null
+		 */
 		public Builder(Integer version) {
 			this.version = Optional.ofNullable(version);
 			this.productCode = Optional.empty();
@@ -41,34 +67,41 @@ public class AbstractDevice<T extends AbstractDevice.Builder<T>> implements Devi
 		}
 		
 		public T connectors(List<Connector.Type> connectors) {
-			this.connectorTypes = connectors == null ? Collections.emptyList() : connectors;
+			this.connectorTypes = connectors == null ? new ArrayList<Connector.Type>() : new ArrayList<>(connectors);
 			return getThis();
 		}
 		
 		protected abstract T getThis();
 		
 		protected List<Connector.Type> getConnectors() {
-			return connectorTypes;
+			return new ArrayList<>(connectorTypes);
 		}
 		
 		protected void validate() throws NullPointerException {
-			version.orElseThrow(() -> new NullPointerException("The version was null."));
+			version.orElseThrow(() -> new NullPointerException(NULL_VERSION_NUMBER_MESSAGE));
 		}
 		
 	}
 	
+	/**
+	 * Makes a device with the same version, productCode, and serialNumber as the builder.
+	 * If the builder's version is null {@code DEFAULT_VERSION} is used as version instead.
+	 * 
+	 * The List<{@link Connector.Type}> on the builder is translated into a
+	 * List<{@link Connector}> by creating a new connector for each type in the list.
+	 * Each new connector is assigned an index equal to the index of its place in the list being created. 
+	 * 
+	 * @param builder contains the information used to create the AbstractDevice
+	 */
 	public AbstractDevice(Builder<T> builder) {
-		Optional<Integer> tempVersion = null;
-		try {
-			builder.validate();
-			tempVersion = builder.version;
-		} catch (NullPointerException e) {
-			tempVersion = DEFAULT_VERSION;
-		} finally {
-			this.version = tempVersion;
-			this.productCode = builder.productCode;
-			this.serialNumber = builder.serialNumber;
-			this.connectors = builder.getConnectors();
+		this.version = builder.version.get();
+		this.productCode = builder.productCode;
+		this.serialNumber = builder.serialNumber;
+		this.connectors = new ArrayList<Connector>();
+		int index = 0;
+		for (Connector.Type type : builder.getConnectors()) {
+			this.connectors.add(new Connector(this, index, type));
+			index++;
 		}
 	}
 
@@ -84,7 +117,7 @@ public class AbstractDevice<T extends AbstractDevice.Builder<T>> implements Devi
 
 	@Override
 	public Integer getVersion() {
-		return version.get();
+		return version;
 	}
 
 	@Override
@@ -94,19 +127,20 @@ public class AbstractDevice<T extends AbstractDevice.Builder<T>> implements Devi
 
 	@Override
 	public List<Type> getConnectors() {
-		return connectors.stream().map(e -> e.getType()).collect(Collectors.toList());
+		return connectors.stream().map(connector -> connector.getType()).collect(Collectors.toList());
 	}
 
+	/**
+	 * @param index the index of the desired connector
+	 * @return 
+	 * If the index is within the bounds of the list, the connector at the index specified.
+	 * If the index is out of bounds, null is returned.
+	 */
 	@Override
 	public Connector getConnector(int index) {
-		if (0 > index || index > connectors.size() - 1) {
-			return null;
+		if (0 <= index && index < connectors.size()) {
+			return connectors.get(index);
 		}
-		return connectors.get(index);
-	}
-
-	@Override
-	public DeviceClass getDeviceClass() {
 		return null;
 	}
 

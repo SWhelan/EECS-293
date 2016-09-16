@@ -5,9 +5,9 @@ import java.util.List;
 import java.util.Optional;
 
 import eecs293.uxb.Connector;
-import eecs293.uxb.Connector.Type;
 
 public interface Device {
+	
 	/**
 	 * @return the product code of this device. If the product code is unknown, return an empty optional.
 	 */

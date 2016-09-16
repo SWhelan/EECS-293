@@ -4,12 +4,12 @@ import java.math.BigInteger;
 
 public final class BinaryMessage implements Message {
 
-	private final static int DEFAULT_VALUE = 0;
+	private final static BigInteger DEFAULT_VALUE = BigInteger.ZERO;
 	
 	private final BigInteger value;
 	
 	public BinaryMessage(BigInteger value) {
-		this.value = value == null ? BigInteger.valueOf(DEFAULT_VALUE) : value;
+		this.value = value == null ? DEFAULT_VALUE : value;
 	}
 	
 	public BigInteger getValue() {
