@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import eecs293.uxb.Connector;
 import eecs293.uxb.Connector.Type;
@@ -41,7 +40,6 @@ public abstract class AbstractDevice<T extends AbstractDevice.Builder<T>> implem
 		private List<Type> connectorTypes;
 		
 		/**
-		 * 
 		 * Creates a builder with specified version, empty optionals for 
 		 * productCode and serialNumber, and an empty list of Connector.Type.
 		 * 
@@ -124,8 +122,8 @@ public abstract class AbstractDevice<T extends AbstractDevice.Builder<T>> implem
 	}
 
 	@Override
-	public List<Type> getConnectors() {
-		return connectors.stream().map(connector -> connector.getType()).collect(Collectors.toList());
+	public List<Connector> getConnectors() {
+		return new ArrayList<>(connectors);
 	}
 
 	/**

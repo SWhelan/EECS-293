@@ -1,6 +1,8 @@
 package eecs293.uxb.devices;
 
 import eecs293.uxb.Connector;
+import eecs293.uxb.messages.BinaryMessage;
+import eecs293.uxb.messages.StringMessage;
 
 /**
  * A device that is required to have at least one 
@@ -10,7 +12,7 @@ import eecs293.uxb.Connector;
  */
 public class Hub extends AbstractDevice<Hub.Builder> {
 	
-	public static class Builder extends AbstractDevice.Builder<Builder> {
+	public static class Builder extends AbstractDevice.Builder<Hub.Builder> {
 		public static final String MISSING_COMPUTER_CONNECTOR_MESSAGE = "This hub does not have a computer connector.";
 		public static final String MISSING_PERIPHERAL_CONNECTOR_MESSAGE = "This hub does not have a peripheral connector.";
 
@@ -18,7 +20,7 @@ public class Hub extends AbstractDevice<Hub.Builder> {
 			super(version);
 		}
 		
-		public Hub build() throws IllegalStateException {
+		public Hub build() throws IllegalStateException, NullPointerException {
 			this.validate();
 			return new Hub(this);
 		}
@@ -33,7 +35,7 @@ public class Hub extends AbstractDevice<Hub.Builder> {
 		 * 
 		 * @throws IllegalStateException if any of the requirements are not met
 		 */
-		protected void validate() throws IllegalStateException {
+		protected void validate() throws IllegalStateException, NullPointerException {
 			super.validate();
 		
 			if (!super.getConnectors().contains(Connector.Type.COMPUTER)) {
@@ -54,6 +56,16 @@ public class Hub extends AbstractDevice<Hub.Builder> {
 	@Override
 	public DeviceClass getDeviceClass() {
 		return DeviceClass.HUB;
+	}
+
+	@Override
+	public void recvHelper(StringMessage message, Connector connector) {
+		System.out.println("recv not yet supported");
+	}
+
+	@Override
+	public void recvHelper(BinaryMessage message, Connector connector) {
+		System.out.println("recv not yet supported");
 	}
 
 }

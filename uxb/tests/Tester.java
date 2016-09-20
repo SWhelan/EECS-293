@@ -27,7 +27,7 @@ public class Tester {
 	private static final BigInteger TEST_SERIAL_NUMBER = BigInteger.valueOf(9);
 
 	// Tests depend on the order of this list.
-	private static final List<Type> CONNECTORS = Arrays.asList(Connector.Type.COMPUTER, Connector.Type.PERIPHERAL);
+	private static final List<Type> CONNECTORS_TYPES = Arrays.asList(Connector.Type.COMPUTER, Connector.Type.PERIPHERAL);
 	
 	private Hub.Builder badBuilder;
 	private Hub.Builder goodBuilder;
@@ -35,7 +35,7 @@ public class Tester {
 	@Before
 	public void setUp() {
 		badBuilder = new Builder(TEST_VERSION_NUMBER);
-		goodBuilder = new Builder(TEST_VERSION_NUMBER).connectors(CONNECTORS);
+		goodBuilder = new Builder(TEST_VERSION_NUMBER).connectors(CONNECTORS_TYPES);
 	}
 	
 	@After
@@ -89,10 +89,9 @@ public class Tester {
 	@Test
 	public void testGetConnector() {
     	Hub hub = goodBuilder.build();
-    	assertTrue(hub.getConnectorCount() == CONNECTORS.size());
+    	assertTrue(hub.getConnectorCount() == CONNECTORS_TYPES.size());
     	assertEquals(hub.getConnector(0).getType(), Connector.Type.COMPUTER);
     	assertEquals(hub.getConnector(1).getType(), Connector.Type.PERIPHERAL);
-    	assertEquals(hub.getConnectors(), CONNECTORS);
 	}
 	
 	@Test
@@ -122,6 +121,17 @@ public class Tester {
 	public void testSetSerialNumber() {
 		Hub hub = goodBuilder.serialNumber(TEST_SERIAL_NUMBER).build();    	
     	assertEquals(hub.getSerialNumber().get(), TEST_SERIAL_NUMBER);
+	}
+	
+	/**
+	 * Create a test that, given a List<Device> and a List<Message>,
+delivers all messages to all devices on their zero connector (if any).
+The device list should contain at least one device of each type, and
+the message list should contain at least one binary and at least one
+string message.
+	 */
+	public void testTalking() {
+		
 	}
 	
 }
