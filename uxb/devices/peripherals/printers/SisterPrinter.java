@@ -29,16 +29,27 @@ public class SisterPrinter extends AbstractPrinter {
 	}
 
 	@Override
-	public void recvHelper(StringMessage message, Connector connector) {
-		System.out.println("Sister printer has printed the string: " + message.getString());
-		System.out.println("Printer serial number: " + this.getSerialNumber());
+	public void recv(StringMessage message, Connector connector) {
+		checkIfValid(message, connector);
+		StringBuilder builder = new StringBuilder();
+		builder.append("Sister printer has printed the string: ")
+			.append(message.getString())
+			.append(NEW_LINE)
+			.append("Printer serial number: ")
+			.append(this.getSerialNumber());
+		infoLog(builder.toString());
 	}
 
 	@Override
-	public void recvHelper(BinaryMessage message, Connector connector) {
+	public void recv(BinaryMessage message, Connector connector) {
+		checkIfValid(message, connector);
+		// If there is not a product code don't add to the sum
 		int productCode = this.getProductCode().isPresent() ? this.getProductCode().get() : 0;
 		int sum = message.getValue().intValue() + productCode;
-		System.out.println("Sister printer has printed the binary message: " + sum);
+		StringBuilder builder = new StringBuilder();
+		builder.append("Sister printer has printed the binary message: ")
+			.append(sum);
+		infoLog(builder.toString());
 	}
 
 }

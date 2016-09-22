@@ -8,6 +8,10 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 
 import org.junit.After;
 import org.junit.Before;
@@ -16,9 +20,16 @@ import org.junit.Test;
 import eecs293.uxb.Connector;
 import eecs293.uxb.Connector.Type;
 import eecs293.uxb.devices.AbstractDevice;
+import eecs293.uxb.devices.Device;
 import eecs293.uxb.devices.DeviceClass;
 import eecs293.uxb.devices.Hub;
 import eecs293.uxb.devices.Hub.Builder;
+import eecs293.uxb.devices.peripherals.printers.CannonPrinter;
+import eecs293.uxb.devices.peripherals.printers.SisterPrinter;
+import eecs293.uxb.devices.peripherals.video.GoAmateur;
+import eecs293.uxb.messages.BinaryMessage;
+import eecs293.uxb.messages.Message;
+import eecs293.uxb.messages.StringMessage;
 
 public class Tester {
 	
@@ -27,7 +38,14 @@ public class Tester {
 	private static final BigInteger TEST_SERIAL_NUMBER = BigInteger.valueOf(9);
 
 	// Tests depend on the order of this list.
-	private static final List<Type> CONNECTORS_TYPES = Arrays.asList(Connector.Type.COMPUTER, Connector.Type.PERIPHERAL);
+	public static final List<Type> CONNECTORS_TYPES = Arrays.asList(Connector.Type.COMPUTER, Connector.Type.PERIPHERAL);
+	public static final List<Type> ONLY_PERIPHERALS = Arrays.asList(Connector.Type.PERIPHERAL, Connector.Type.PERIPHERAL);
+	public static final List<Message> MESSAGES = Arrays.asList(
+			new StringMessage("The first message is a string."), 
+			new BinaryMessage(BigInteger.valueOf(2)),
+			new StringMessage("The third message is a string."),
+			new StringMessage("The fourth message is a string."),
+			new BinaryMessage(BigInteger.valueOf(5)));
 	
 	private Hub.Builder badBuilder;
 	private Hub.Builder goodBuilder;
@@ -123,15 +141,68 @@ public class Tester {
     	assertEquals(hub.getSerialNumber().get(), TEST_SERIAL_NUMBER);
 	}
 	
-	/**
-	 * Create a test that, given a List<Device> and a List<Message>,
-delivers all messages to all devices on their zero connector (if any).
-The device list should contain at least one device of each type, and
-the message list should contain at least one binary and at least one
-string message.
-	 */
+	@Test
 	public void testTalking() {
-		
+		LogTester logTester = initializeHandler();
+		Hub hub = new Builder(3).connectors(CONNECTORS_TYPES).build();
+		SisterPrinter sisterPrinter = ((SisterPrinter.Builder) (new SisterPrinter.Builder(1).connectors(ONLY_PERIPHERALS))).build();
+		CannonPrinter cannonPrinter = ((CannonPrinter.Builder) (new CannonPrinter.Builder(1).connectors(ONLY_PERIPHERALS))).build();
+		GoAmateur goAmateur = ((GoAmateur.Builder) (new GoAmateur.Builder(1).connectors(ONLY_PERIPHERALS))).build();
+		broadcast(Arrays.asList(hub, sisterPrinter, cannonPrinter, goAmateur), MESSAGES, logTester);
+	}
+
+	private LogTester initializeHandler() {
+		Logger logger = Logger.getGlobal();
+		logger.setUseParentHandlers(false);		
+		LogTester logTester = new LogTester();
+		logger.addHandler(logTester);
+		return logTester;
+	}
+	
+	private void broadcast(List<Device> devices, List<Message> messages, LogTester handler) {
+		for (Message message : messages) {
+			for (Device device : devices) {
+				message.reach(device, device.getConnector(0));
+				assertTrue(handler.checkLastLevel(Level.INFO));
+				if (device.getDeviceClass() == DeviceClass.HUB) {
+					assertTrue(handler.checkLastMessageContains(Hub.NOT_YET_SUPPORTED_MESSAGE));
+				} else if (device.getDeviceClass() == DeviceClass.PRINTER) {
+					assertTrue(handler.checkLastMessageContains("printer has printed"));
+				} else {
+					assertTrue(handler.checkLastMessageContains("not"));
+				}
+			}
+		}
+	}
+	
+	// Adding appender to global logger for testing purposes
+	// http://stackoverflow.com/a/1834789
+	private class LogTester extends Handler {
+		private String message = "";
+	    private Level level = Level.ALL;
+	    
+	    public boolean checkLastMessageContains(String expected) {
+	        return message.contains(expected);
+	    }
+	    
+	    public boolean checkLastLevel(Level expected) {
+	        return level.equals(expected);
+	    }
+
+	    public void publish(LogRecord record) {
+	    	message = record.getMessage();
+	        level = record.getLevel();
+	    }
+
+		@Override
+		public void flush() {
+			// Do Nothing
+		}
+
+		@Override
+		public void close() throws SecurityException {
+			// Do Nothing			
+		}
 	}
 	
 }

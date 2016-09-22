@@ -29,13 +29,23 @@ public class GoAmateur extends AbstractVideo {
 	}
 
 	@Override
-	public void recvHelper(StringMessage message, Connector connector) {
-		System.out.println("GoAmateur does not understand string messages: " + message.getString());
-		System.out.println("Connector Index: " + connector.getIndex());
+	public void recv(StringMessage message, Connector connector) {
+		checkIfValid(message, connector);
+		StringBuilder builder = new StringBuilder();
+		builder.append("GoAmateur does not understand string messages: ")
+			.append(message.getString())
+			.append(NEW_LINE)
+			.append("Connector Index: ")
+			.append(connector.getIndex());
+		infoLog(builder.toString());
 	}
 
 	@Override
-	public void recvHelper(BinaryMessage message, Connector connector) {
-		System.out.println("GoAmateur is not yet active: " + message.getValue());
+	public void recv(BinaryMessage message, Connector connector) {
+		checkIfValid(message, connector);
+		StringBuilder builder = new StringBuilder();
+		builder.append("GoAmateur is not yet active: ")
+			.append(message.getValue());
+		infoLog(builder.toString());
 	}
 }

@@ -30,15 +30,26 @@ public class CannonPrinter extends AbstractPrinter {
 	}
 
 	@Override
-	public void recvHelper(StringMessage message, Connector connector) {
-		System.out.println("Cannon printer has printed the string: " + message.getString());
-		System.out.println("Printer UXB version number: " + this.getVersion());
+	public void recv(StringMessage message, Connector connector) {
+		checkIfValid(message, connector);
+		StringBuilder builder = new StringBuilder();
+		builder.append("Cannon printer has printed the string: ")
+		.append(message.getString())
+		.append(NEW_LINE)
+		.append("Printer UXB version number: ")
+		.append(this.getVersion());
+		infoLog(builder.toString());
 	}
 
 	@Override
-	public void recvHelper(BinaryMessage message, Connector connector) {
+	public void recv(BinaryMessage message, Connector connector) {
+		checkIfValid(message, connector);
 		BigInteger serialNumber = this.getSerialNumber().isPresent() ? this.getSerialNumber().get() : BigInteger.ONE;
 		BigInteger product = message.getValue().multiply(serialNumber);
-		System.out.println("Cannon printer has printed the binary message: " + product);
+		StringBuilder builder = new StringBuilder();
+		builder.append("Cannon printer has printed the binary message: ")
+			.append(product);
+		infoLog(builder.toString());
 	}
+
 }

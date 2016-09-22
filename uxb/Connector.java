@@ -3,9 +3,7 @@ package eecs293.uxb;
 import java.util.Optional;
 
 import eecs293.uxb.devices.Device;
-import eecs293.uxb.messages.BinaryMessage;
 import eecs293.uxb.messages.Message;
-import eecs293.uxb.messages.StringMessage;
 
 public final class Connector {
 	
@@ -42,12 +40,6 @@ public final class Connector {
 	}
 	
 	public void recv(Message message) {
-		if (message.getClass() == BinaryMessage.class) {
-			device.recv((BinaryMessage) message, this);
-		}
-		
-		if (message.getClass() == StringMessage.class) {
-			device.recv((StringMessage) message, this);
-		}
+		message.reach(device, this);
 	}
 }

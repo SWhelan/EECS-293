@@ -3,13 +3,15 @@ package eecs293.uxb.devices;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import eecs293.uxb.Connector;
 import eecs293.uxb.messages.BinaryMessage;
 import eecs293.uxb.messages.Message;
 import eecs293.uxb.messages.StringMessage;
 
-public interface Device {
+public interface Device {	
 	
 	/**
 	 * @return the product code of this device. If the product code is unknown, return an empty optional.
@@ -53,12 +55,7 @@ public interface Device {
 	 * @param message
 	 * @param connector
 	 */
-	public default void recv(StringMessage message, Connector connector) {
-		checkIfValid(message, connector);
-		recvHelper(message, connector);
-	}
-	
-	public void recvHelper(StringMessage message, Connector connector);
+	public void recv(StringMessage message, Connector connector);
 	
 	/**
 	 * Signifies the arrival of a BinaryMessage at the given connector in the device.
@@ -66,13 +63,8 @@ public interface Device {
 	 * @param message
 	 * @param connector
 	 */
-	public default void recv(BinaryMessage message, Connector connector) {
-		checkIfValid(message, connector);
-		recvHelper(message, connector);
-	}
-	
-	public void recvHelper(BinaryMessage message, Connector connector);
-	
+	public void recv(BinaryMessage message, Connector connector);
+		
 	public default void checkIfValid(Message message, Connector connector) {
 		if (message == null || connector == null) {
 			throw new NullPointerException();
@@ -81,6 +73,10 @@ public interface Device {
 		if (!getConnectors().contains(connector)) {
 			throw new IllegalStateException();
 		}
+	}
+	
+	public default void infoLog(String string) {
+		Logger.getGlobal().log(Level.INFO, string);
 	}
 	
 }

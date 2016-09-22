@@ -12,6 +12,8 @@ import eecs293.uxb.messages.StringMessage;
  */
 public class Hub extends AbstractDevice<Hub.Builder> {
 	
+	public static final String NOT_YET_SUPPORTED_MESSAGE = "recv not yet supported";
+
 	public static class Builder extends AbstractDevice.Builder<Hub.Builder> {
 		public static final String MISSING_COMPUTER_CONNECTOR_MESSAGE = "This hub does not have a computer connector.";
 		public static final String MISSING_PERIPHERAL_CONNECTOR_MESSAGE = "This hub does not have a peripheral connector.";
@@ -59,13 +61,15 @@ public class Hub extends AbstractDevice<Hub.Builder> {
 	}
 
 	@Override
-	public void recvHelper(StringMessage message, Connector connector) {
-		System.out.println("recv not yet supported");
+	public void recv(StringMessage message, Connector connector) {
+		checkIfValid(message, connector);
+		infoLog(NOT_YET_SUPPORTED_MESSAGE);
 	}
 
 	@Override
-	public void recvHelper(BinaryMessage message, Connector connector) {
-		System.out.println("recv not yet supported");
+	public void recv(BinaryMessage message, Connector connector) {
+		checkIfValid(message, connector);
+		infoLog(NOT_YET_SUPPORTED_MESSAGE);
 	}
 
 }

@@ -19,6 +19,7 @@ import eecs293.uxb.Connector.Type;
  */
 public abstract class AbstractDevice<T extends AbstractDevice.Builder<T>> implements Device {
 	
+	protected static final String NEW_LINE = "\n";
 	private final Integer version;
 	private final Optional<Integer> productCode;
 	private final Optional<BigInteger> serialNumber;
