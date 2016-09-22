@@ -1,12 +1,12 @@
 package eecs293.uxb.devices.peripherals.printers;
 
-import eecs293.uxb.Connector;
+import eecs293.uxb.connectors.Connector;
 import eecs293.uxb.messages.BinaryMessage;
 import eecs293.uxb.messages.StringMessage;
 
-public class SisterPrinter extends AbstractPrinter {
+public class SisterPrinter extends AbstractPrinter<SisterPrinter.Builder> {
 	
-	public static class Builder extends AbstractPrinter.Builder {
+	public static class Builder extends AbstractPrinter.Builder<SisterPrinter.Builder> {
 
 		public Builder(Integer version) {
 			super(version);
@@ -34,8 +34,7 @@ public class SisterPrinter extends AbstractPrinter {
 		StringBuilder builder = new StringBuilder();
 		builder.append("Sister printer has printed the string: ")
 			.append(message.getString())
-			.append(NEW_LINE)
-			.append("Printer serial number: ")
+			.append("\nPrinter serial number: ")
 			.append(this.getSerialNumber());
 		infoLog(builder.toString());
 	}

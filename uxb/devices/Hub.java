@@ -1,6 +1,6 @@
 package eecs293.uxb.devices;
 
-import eecs293.uxb.Connector;
+import eecs293.uxb.connectors.Connector;
 import eecs293.uxb.messages.BinaryMessage;
 import eecs293.uxb.messages.StringMessage;
 

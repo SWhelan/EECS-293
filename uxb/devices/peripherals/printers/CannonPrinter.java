@@ -2,12 +2,12 @@ package eecs293.uxb.devices.peripherals.printers;
 
 import java.math.BigInteger;
 
-import eecs293.uxb.Connector;
+import eecs293.uxb.connectors.Connector;
 import eecs293.uxb.messages.BinaryMessage;
 import eecs293.uxb.messages.StringMessage;
 
-public class CannonPrinter extends AbstractPrinter {
-	public static class Builder extends AbstractPrinter.Builder {
+public class CannonPrinter extends AbstractPrinter<CannonPrinter.Builder> {
+	public static class Builder extends AbstractPrinter.Builder<CannonPrinter.Builder> {
 
 		public Builder(Integer version) {
 			super(version);
@@ -35,8 +35,7 @@ public class CannonPrinter extends AbstractPrinter {
 		StringBuilder builder = new StringBuilder();
 		builder.append("Cannon printer has printed the string: ")
 		.append(message.getString())
-		.append(NEW_LINE)
-		.append("Printer UXB version number: ")
+		.append("\nPrinter UXB version number: ")
 		.append(this.getVersion());
 		infoLog(builder.toString());
 	}
@@ -45,7 +44,7 @@ public class CannonPrinter extends AbstractPrinter {
 	public void recv(BinaryMessage message, Connector connector) {
 		validateCanBeReceived(message, connector);
 		// Because we are multiplying if there isn't a serial number multiply by 1 to print just the message value
-		BigInteger serialNumber = this.getSerialNumber().isPresent() ? this.getSerialNumber().get() : BigInteger.ONE;
+		BigInteger serialNumber = this.getSerialNumber().orElse(BigInteger.ONE);
 		BigInteger product = message.getValue().multiply(serialNumber);
 		StringBuilder builder = new StringBuilder();
 		builder.append("Cannon printer has printed the binary message: ")

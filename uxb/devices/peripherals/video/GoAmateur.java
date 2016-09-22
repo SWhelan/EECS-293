@@ -1,12 +1,12 @@
 package eecs293.uxb.devices.peripherals.video;
 
-import eecs293.uxb.Connector;
+import eecs293.uxb.connectors.Connector;
 import eecs293.uxb.messages.BinaryMessage;
 import eecs293.uxb.messages.StringMessage;
 
-public class GoAmateur extends AbstractVideo {
+public class GoAmateur extends AbstractVideo<GoAmateur.Builder> {
 	
-	public static class Builder extends AbstractVideo.Builder {
+	public static class Builder extends AbstractVideo.Builder<GoAmateur.Builder>  {
 
 		public Builder(Integer version) {
 			super(version);
@@ -34,8 +34,7 @@ public class GoAmateur extends AbstractVideo {
 		StringBuilder builder = new StringBuilder();
 		builder.append("GoAmateur does not understand string messages: ")
 			.append(message.getString())
-			.append(NEW_LINE)
-			.append("Connector Index: ")
+			.append("\nConnector Index: ")
 			.append(connector.getIndex());
 		infoLog(builder.toString());
 	}

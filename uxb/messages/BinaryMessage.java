@@ -2,7 +2,7 @@ package eecs293.uxb.messages;
 
 import java.math.BigInteger;
 
-import eecs293.uxb.Connector;
+import eecs293.uxb.connectors.Connector;
 import eecs293.uxb.devices.Device;
 
 public final class BinaryMessage implements Message {

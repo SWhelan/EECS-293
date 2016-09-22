@@ -5,9 +5,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import eecs293.uxb.Connector;
-import eecs293.uxb.Connector.Type;
+import eecs293.uxb.connectors.Connector;
+import eecs293.uxb.connectors.Connector.Type;
+import eecs293.uxb.messages.Message;
 
 /**
  * 
@@ -19,7 +22,8 @@ import eecs293.uxb.Connector.Type;
  */
 public abstract class AbstractDevice<T extends AbstractDevice.Builder<T>> implements Device {
 	
-	protected static final String NEW_LINE = "\n";
+	private static final Logger LOGGER = Logger.getLogger(AbstractDevice.class.getName());
+	
 	private final Integer version;
 	private final Optional<Integer> productCode;
 	private final Optional<BigInteger> serialNumber;
@@ -139,6 +143,37 @@ public abstract class AbstractDevice<T extends AbstractDevice.Builder<T>> implem
 			return connectors.get(index);
 		}
 		return null;
+	}
+	
+	/**
+	 * 
+	 * Validates/determines if the message can be received on
+	 * the specified connector. 
+	 * 
+	 * @param message the message to receive
+	 * @param connector the connector to receive the message
+	 * @throws NullPointerException thrown if the message or connector is null
+	 * @throws IllegalStateException thrown if the connector specified is not connected to this device
+	 */
+	public void validateCanBeReceived(Message message, Connector connector) 
+			throws NullPointerException, IllegalStateException {
+		if (message == null || connector == null) {
+			throw new NullPointerException();
+		}
+		
+		if (!getConnectors().contains(connector)) {
+			throw new IllegalStateException();
+		}
+	}
+	
+	/**
+	 * The default logging statement for devices. 
+	 * Uses the global logger and the INFO level.
+	 * 
+	 * @param message text to log
+	 */
+	public static void infoLog(String message) {
+		LOGGER.log(Level.INFO, message);
 	}
 
 }

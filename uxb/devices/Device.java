@@ -3,12 +3,9 @@ package eecs293.uxb.devices;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Optional;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import eecs293.uxb.Connector;
+import eecs293.uxb.connectors.Connector;
 import eecs293.uxb.messages.BinaryMessage;
-import eecs293.uxb.messages.Message;
 import eecs293.uxb.messages.StringMessage;
 
 public interface Device {	
@@ -64,36 +61,5 @@ public interface Device {
 	 * @param connector
 	 */
 	public void recv(BinaryMessage message, Connector connector);
-		
-	/**
-	 * 
-	 * Validates/determines if the message can be received on
-	 * the specified connector. 
-	 * 
-	 * @param message the message to receive
-	 * @param connector the connector to receive the message
-	 * @throws NullPointerException thrown if the message or connector is null
-	 * @throws IllegalStateException thrown if the connector specified is not connected to this device
-	 */
-	public default void validateCanBeReceived(Message message, Connector connector) 
-			throws NullPointerException, IllegalStateException {
-		if (message == null || connector == null) {
-			throw new NullPointerException();
-		}
-		
-		if (!getConnectors().contains(connector)) {
-			throw new IllegalStateException();
-		}
-	}
-	
-	/**
-	 * The default logging statement for devices. 
-	 * Uses the global logger and the INFO level.
-	 * 
-	 * @param message text to log
-	 */
-	public default void infoLog(String message) {
-		Logger.getGlobal().log(Level.INFO, message);
-	}
 	
 }

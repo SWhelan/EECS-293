@@ -1,4 +1,4 @@
-package eecs293.uxb;
+package eecs293.uxb.connectors;
 
 import java.util.Optional;
 
@@ -21,6 +21,7 @@ public final class Connector {
 		this.device = device;
 		this.index = index;
 		this.type = type;
+		this.peer = Optional.empty();
 	}
 	
 	public Device getDevice() {

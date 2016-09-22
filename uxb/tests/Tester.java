@@ -17,8 +17,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import eecs293.uxb.Connector;
-import eecs293.uxb.Connector.Type;
+import eecs293.uxb.connectors.Connector;
+import eecs293.uxb.connectors.Connector.Type;
 import eecs293.uxb.devices.AbstractDevice;
 import eecs293.uxb.devices.Device;
 import eecs293.uxb.devices.DeviceClass;
@@ -53,7 +53,7 @@ public class Tester {
 	
 	public LogTester initializeLogTester() {
 		if (logTester == null) {
-			Logger logger = Logger.getGlobal();
+			Logger logger = Logger.getLogger(AbstractDevice.class.getName());
 			logger.setUseParentHandlers(false);		
 			logTester = new LogTester();
 			logger.addHandler(logTester);
@@ -178,23 +178,23 @@ public class Tester {
 	@Test
 	public void testBroadcast() {
 		Hub hub = goodBuilder.build();
-		SisterPrinter sisterPrinter = ((SisterPrinter.Builder) (new SisterPrinter.Builder(TEST_VERSION_NUMBER).connectors(ONLY_PERIPHERALS))).build();
-		CannonPrinter cannonPrinter = ((CannonPrinter.Builder) (new CannonPrinter.Builder(TEST_VERSION_NUMBER).connectors(ONLY_PERIPHERALS))).build();
-		GoAmateur goAmateur = ((GoAmateur.Builder) (new GoAmateur.Builder(TEST_VERSION_NUMBER).connectors(ONLY_PERIPHERALS))).build();
+		SisterPrinter sisterPrinter = ((SisterPrinter.Builder)(new SisterPrinter.Builder(TEST_VERSION_NUMBER).connectors(ONLY_PERIPHERALS))).build();
+		CannonPrinter cannonPrinter = ((CannonPrinter.Builder)(new CannonPrinter.Builder(TEST_VERSION_NUMBER).connectors(ONLY_PERIPHERALS))).build();
+		GoAmateur goAmateur = ((GoAmateur.Builder)(new GoAmateur.Builder(TEST_VERSION_NUMBER).connectors(ONLY_PERIPHERALS))).build();
 		broadcast(Arrays.asList(hub, sisterPrinter, cannonPrinter, goAmateur), MESSAGES, initializeLogTester());
 	}
 	
-	private void broadcast(List<Device> devices, List<Message> messages, LogTester handler) {
+	private void broadcast(List<Device> devices, List<Message> messages, LogTester logTester) {
 		for (Message message : messages) {
 			for (Device device : devices) {
 				message.reach(device, device.getConnector(0));
-				assertTrue(handler.checkLastLevel(Level.INFO));
+				assertTrue(logTester.checkLastLevel(Level.INFO));
 				if (device.getDeviceClass() == DeviceClass.HUB) {
-					assertTrue(handler.checkLastMessageContains(Hub.NOT_YET_SUPPORTED_MESSAGE));
+					assertTrue(logTester.checkLastMessageContains(Hub.NOT_YET_SUPPORTED_MESSAGE));
 				} else if (device.getDeviceClass() == DeviceClass.PRINTER) {
-					assertTrue(handler.checkLastMessageContains("printer has printed"));
+					assertTrue(logTester.checkLastMessageContains("printer has printed"));
 				} else {
-					assertTrue(handler.checkLastMessageContains("not"));
+					assertTrue(logTester.checkLastMessageContains("not"));
 				}
 			}
 		}
@@ -214,6 +214,7 @@ public class Tester {
 	        return level.equals(expected);
 	    }
 
+	    @Override
 	    public void publish(LogRecord record) {
 	    	message = record.getMessage();
 	        level = record.getLevel();

@@ -10,9 +10,9 @@ import eecs293.uxb.devices.peripherals.AbstractPeripheral;
  * @author Sarah Whelan
  *
  */
-public abstract class AbstractPrinter extends AbstractPeripheral {
+public abstract class AbstractPrinter<T extends AbstractPrinter.Builder<T>> extends AbstractPeripheral<T> {
 
-	public abstract static class Builder extends AbstractPeripheral.Builder {
+	public abstract static class Builder<T> extends AbstractPeripheral.Builder<T> {
 
 		public Builder(Integer version) {
 			super(version);
@@ -20,7 +20,7 @@ public abstract class AbstractPrinter extends AbstractPeripheral {
 
 	}
 
-	protected AbstractPrinter(Builder builder) {
+	protected AbstractPrinter(Builder<T> builder) {
 		super(builder);
 	}
 	
