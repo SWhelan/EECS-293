@@ -62,13 +62,13 @@ public class Hub extends AbstractDevice<Hub.Builder> {
 
 	@Override
 	public void recv(StringMessage message, Connector connector) {
-		checkIfValid(message, connector);
+		validateCanBeReceived(message, connector);
 		infoLog(NOT_YET_SUPPORTED_MESSAGE);
 	}
 
 	@Override
 	public void recv(BinaryMessage message, Connector connector) {
-		checkIfValid(message, connector);
+		validateCanBeReceived(message, connector);
 		infoLog(NOT_YET_SUPPORTED_MESSAGE);
 	}
 

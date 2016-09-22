@@ -65,7 +65,18 @@ public interface Device {
 	 */
 	public void recv(BinaryMessage message, Connector connector);
 		
-	public default void checkIfValid(Message message, Connector connector) {
+	/**
+	 * 
+	 * Validates/determines if the message can be received on
+	 * the specified connector. 
+	 * 
+	 * @param message the message to receive
+	 * @param connector the connector to receive the message
+	 * @throws NullPointerException thrown if the message or connector is null
+	 * @throws IllegalStateException thrown if the connector specified is not connected to this device
+	 */
+	public default void validateCanBeReceived(Message message, Connector connector) 
+			throws NullPointerException, IllegalStateException {
 		if (message == null || connector == null) {
 			throw new NullPointerException();
 		}
@@ -75,8 +86,14 @@ public interface Device {
 		}
 	}
 	
-	public default void infoLog(String string) {
-		Logger.getGlobal().log(Level.INFO, string);
+	/**
+	 * The default logging statement for devices. 
+	 * Uses the global logger and the INFO level.
+	 * 
+	 * @param message text to log
+	 */
+	public default void infoLog(String message) {
+		Logger.getGlobal().log(Level.INFO, message);
 	}
 	
 }

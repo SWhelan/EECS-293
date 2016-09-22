@@ -30,7 +30,7 @@ public class SisterPrinter extends AbstractPrinter {
 
 	@Override
 	public void recv(StringMessage message, Connector connector) {
-		checkIfValid(message, connector);
+		validateCanBeReceived(message, connector);
 		StringBuilder builder = new StringBuilder();
 		builder.append("Sister printer has printed the string: ")
 			.append(message.getString())
@@ -42,7 +42,7 @@ public class SisterPrinter extends AbstractPrinter {
 
 	@Override
 	public void recv(BinaryMessage message, Connector connector) {
-		checkIfValid(message, connector);
+		validateCanBeReceived(message, connector);
 		// If there is not a product code don't add to the sum
 		int productCode = this.getProductCode().isPresent() ? this.getProductCode().get() : 0;
 		int sum = message.getValue().intValue() + productCode;

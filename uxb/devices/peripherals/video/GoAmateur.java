@@ -30,7 +30,7 @@ public class GoAmateur extends AbstractVideo {
 
 	@Override
 	public void recv(StringMessage message, Connector connector) {
-		checkIfValid(message, connector);
+		validateCanBeReceived(message, connector);
 		StringBuilder builder = new StringBuilder();
 		builder.append("GoAmateur does not understand string messages: ")
 			.append(message.getString())
@@ -42,7 +42,7 @@ public class GoAmateur extends AbstractVideo {
 
 	@Override
 	public void recv(BinaryMessage message, Connector connector) {
-		checkIfValid(message, connector);
+		validateCanBeReceived(message, connector);
 		StringBuilder builder = new StringBuilder();
 		builder.append("GoAmateur is not yet active: ")
 			.append(message.getValue());

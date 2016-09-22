@@ -3,6 +3,12 @@ package eecs293.uxb.devices.peripherals;
 import eecs293.uxb.Connector;
 import eecs293.uxb.devices.AbstractDevice;
 
+/**
+ * Peripherals require that all of their connectors
+ * are peripherals but otherwise act like devices.
+ * 
+ * @author Sarah Whelan
+ */
 public abstract class AbstractPeripheral extends AbstractDevice<AbstractPeripheral.Builder> {
 	
 	public static abstract class Builder extends AbstractDevice.Builder<AbstractPeripheral.Builder> {

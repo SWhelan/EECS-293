@@ -1,6 +1,6 @@
 EECS 293 Software Craftsmanship
-Programming Assignment 2
-September 15, 2016
+Programming Assignment 3
+September 22, 2016
 Sarah Whelan (slw96)
 
 The only thing to really run here are the tests on the code which are currently all in tests/Tester.java.

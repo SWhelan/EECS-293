@@ -31,7 +31,7 @@ public class CannonPrinter extends AbstractPrinter {
 
 	@Override
 	public void recv(StringMessage message, Connector connector) {
-		checkIfValid(message, connector);
+		validateCanBeReceived(message, connector);
 		StringBuilder builder = new StringBuilder();
 		builder.append("Cannon printer has printed the string: ")
 		.append(message.getString())
@@ -43,7 +43,8 @@ public class CannonPrinter extends AbstractPrinter {
 
 	@Override
 	public void recv(BinaryMessage message, Connector connector) {
-		checkIfValid(message, connector);
+		validateCanBeReceived(message, connector);
+		// Because we are multiplying if there isn't a serial number multiply by 1 to print just the message value
 		BigInteger serialNumber = this.getSerialNumber().isPresent() ? this.getSerialNumber().get() : BigInteger.ONE;
 		BigInteger product = message.getValue().multiply(serialNumber);
 		StringBuilder builder = new StringBuilder();

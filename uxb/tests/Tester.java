@@ -38,7 +38,7 @@ public class Tester {
 	private static final BigInteger TEST_SERIAL_NUMBER = BigInteger.valueOf(9);
 
 	// Tests depend on the order of this list.
-	public static final List<Type> CONNECTORS_TYPES = Arrays.asList(Connector.Type.COMPUTER, Connector.Type.PERIPHERAL);
+	public static final List<Type> CONNECTOR_TYPES = Arrays.asList(Connector.Type.COMPUTER, Connector.Type.PERIPHERAL);
 	public static final List<Type> ONLY_PERIPHERALS = Arrays.asList(Connector.Type.PERIPHERAL, Connector.Type.PERIPHERAL);
 	public static final List<Message> MESSAGES = Arrays.asList(
 			new StringMessage("The first message is a string."), 
@@ -49,13 +49,27 @@ public class Tester {
 	
 	private Hub.Builder badBuilder;
 	private Hub.Builder goodBuilder;
+	private LogTester logTester = null;
 	
+	public LogTester initializeLogTester() {
+		if (logTester == null) {
+			Logger logger = Logger.getGlobal();
+			logger.setUseParentHandlers(false);		
+			logTester = new LogTester();
+			logger.addHandler(logTester);
+		}
+		
+		return logTester;
+	}
+	
+	// Runs once per test before the test is run.
 	@Before
 	public void setUp() {
 		badBuilder = new Builder(TEST_VERSION_NUMBER);
-		goodBuilder = new Builder(TEST_VERSION_NUMBER).connectors(CONNECTORS_TYPES);
+		goodBuilder = new Builder(TEST_VERSION_NUMBER).connectors(CONNECTOR_TYPES);
 	}
 	
+	// Runs once per test after the test completes.
 	@After
 	public void tearDown() {
 		this.badBuilder = null;
@@ -107,7 +121,7 @@ public class Tester {
 	@Test
 	public void testGetConnector() {
     	Hub hub = goodBuilder.build();
-    	assertTrue(hub.getConnectorCount() == CONNECTORS_TYPES.size());
+    	assertTrue(hub.getConnectorCount() == CONNECTOR_TYPES.size());
     	assertEquals(hub.getConnector(0).getType(), Connector.Type.COMPUTER);
     	assertEquals(hub.getConnector(1).getType(), Connector.Type.PERIPHERAL);
 	}
@@ -142,21 +156,32 @@ public class Tester {
 	}
 	
 	@Test
-	public void testTalking() {
-		LogTester logTester = initializeHandler();
-		Hub hub = new Builder(3).connectors(CONNECTORS_TYPES).build();
-		SisterPrinter sisterPrinter = ((SisterPrinter.Builder) (new SisterPrinter.Builder(1).connectors(ONLY_PERIPHERALS))).build();
-		CannonPrinter cannonPrinter = ((CannonPrinter.Builder) (new CannonPrinter.Builder(1).connectors(ONLY_PERIPHERALS))).build();
-		GoAmateur goAmateur = ((GoAmateur.Builder) (new GoAmateur.Builder(1).connectors(ONLY_PERIPHERALS))).build();
-		broadcast(Arrays.asList(hub, sisterPrinter, cannonPrinter, goAmateur), MESSAGES, logTester);
+	public void testSisterPrinter() {
+		LogTester logTester = initializeLogTester();
+		SisterPrinter sisterPrinter = ((SisterPrinter.Builder) (new SisterPrinter.Builder(TEST_VERSION_NUMBER).connectors(ONLY_PERIPHERALS))).build();
+		int testValue = 2;
+		BinaryMessage message = new BinaryMessage(BigInteger.valueOf(testValue));
+		message.reach(sisterPrinter, sisterPrinter.getConnector(0));
+		assertTrue(logTester.checkLastMessageContains(Integer.toString(testValue)));
 	}
-
-	private LogTester initializeHandler() {
-		Logger logger = Logger.getGlobal();
-		logger.setUseParentHandlers(false);		
-		LogTester logTester = new LogTester();
-		logger.addHandler(logTester);
-		return logTester;
+	
+	@Test
+	public void testCannonPrinter() {
+		LogTester logTester = initializeLogTester();
+		CannonPrinter cannonPrinter = ((CannonPrinter.Builder) (new CannonPrinter.Builder(TEST_VERSION_NUMBER).connectors(ONLY_PERIPHERALS))).build();
+		String testValue = "super helpful test";
+		StringMessage message = new StringMessage(testValue);
+		message.reach(cannonPrinter, cannonPrinter.getConnector(0));
+		assertTrue(logTester.checkLastMessageContains(testValue));
+	}
+	
+	@Test
+	public void testBroadcast() {
+		Hub hub = goodBuilder.build();
+		SisterPrinter sisterPrinter = ((SisterPrinter.Builder) (new SisterPrinter.Builder(TEST_VERSION_NUMBER).connectors(ONLY_PERIPHERALS))).build();
+		CannonPrinter cannonPrinter = ((CannonPrinter.Builder) (new CannonPrinter.Builder(TEST_VERSION_NUMBER).connectors(ONLY_PERIPHERALS))).build();
+		GoAmateur goAmateur = ((GoAmateur.Builder) (new GoAmateur.Builder(TEST_VERSION_NUMBER).connectors(ONLY_PERIPHERALS))).build();
+		broadcast(Arrays.asList(hub, sisterPrinter, cannonPrinter, goAmateur), MESSAGES, initializeLogTester());
 	}
 	
 	private void broadcast(List<Device> devices, List<Message> messages, LogTester handler) {
@@ -177,7 +202,7 @@ public class Tester {
 	
 	// Adding appender to global logger for testing purposes
 	// http://stackoverflow.com/a/1834789
-	private class LogTester extends Handler {
+	public class LogTester extends Handler {
 		private String message = "";
 	    private Level level = Level.ALL;
 	    
