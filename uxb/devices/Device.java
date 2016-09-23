@@ -3,6 +3,7 @@ package eecs293.uxb.devices;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import eecs293.uxb.connectors.Connector;
 import eecs293.uxb.messages.BinaryMessage;
@@ -61,5 +62,21 @@ public interface Device {
 	 * @param connector
 	 */
 	public void recv(BinaryMessage message, Connector connector);
+	
+	/**
+	 * @return the devices to which this device is connected directly through one of its connectors.
+	 */
+	public Set<Device> peerDevices();
+	
+	/**
+	 * @return all devices that are reachable either directly (the peerDevices) or indirectly from this device.
+	 */
+	public Set<Device> reachableDevices();
+	
+	/**
+	 * @param device
+	 * @return true if the argument is connected directly or indirectly to this device, false otherwise.
+	 */
+	public boolean isReachable(Device device);
 	
 }

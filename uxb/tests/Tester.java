@@ -8,10 +8,6 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 
 import org.junit.After;
 import org.junit.Before;
@@ -20,22 +16,21 @@ import org.junit.Test;
 import eecs293.uxb.connectors.Connector;
 import eecs293.uxb.connectors.Connector.Type;
 import eecs293.uxb.devices.AbstractDevice;
-import eecs293.uxb.devices.Device;
 import eecs293.uxb.devices.DeviceClass;
 import eecs293.uxb.devices.Hub;
 import eecs293.uxb.devices.Hub.Builder;
 import eecs293.uxb.devices.peripherals.printers.CannonPrinter;
 import eecs293.uxb.devices.peripherals.printers.SisterPrinter;
-import eecs293.uxb.devices.peripherals.video.GoAmateur;
 import eecs293.uxb.messages.BinaryMessage;
 import eecs293.uxb.messages.Message;
 import eecs293.uxb.messages.StringMessage;
+import eecs293.uxb.tests.LoggerTester.LogTester;
 
 public class Tester {
 	
-	private static final int TEST_VERSION_NUMBER = 3;
-	private static final int TEST_PRODUCT_CODE = 7;
-	private static final BigInteger TEST_SERIAL_NUMBER = BigInteger.valueOf(9);
+	public static final int TEST_VERSION_NUMBER = 3;
+	public static final int TEST_PRODUCT_CODE = 7;
+	public static final BigInteger TEST_SERIAL_NUMBER = BigInteger.valueOf(9);
 
 	// Tests depend on the order of this list.
 	public static final List<Type> CONNECTOR_TYPES = Arrays.asList(Connector.Type.COMPUTER, Connector.Type.PERIPHERAL);
@@ -47,20 +42,8 @@ public class Tester {
 			new StringMessage("The fourth message is a string."),
 			new BinaryMessage(BigInteger.valueOf(5)));
 	
-	private Hub.Builder badBuilder;
-	private Hub.Builder goodBuilder;
-	private LogTester logTester = null;
-	
-	public LogTester initializeLogTester() {
-		if (logTester == null) {
-			Logger logger = Logger.getLogger(AbstractDevice.class.getName());
-			logger.setUseParentHandlers(false);		
-			logTester = new LogTester();
-			logger.addHandler(logTester);
-		}
-		
-		return logTester;
-	}
+	public Hub.Builder badBuilder;
+	public static Hub.Builder goodBuilder;
 	
 	// Runs once per test before the test is run.
 	@Before
@@ -73,7 +56,7 @@ public class Tester {
 	@After
 	public void tearDown() {
 		this.badBuilder = null;
-		this.goodBuilder = null;
+		goodBuilder = null;
 	}
 	
 	@Test
@@ -157,7 +140,7 @@ public class Tester {
 	
 	@Test
 	public void testSisterPrinter() {
-		LogTester logTester = initializeLogTester();
+		LogTester logTester = LoggerTester.initializeLogTester();
 		SisterPrinter sisterPrinter = ((SisterPrinter.Builder) (new SisterPrinter.Builder(TEST_VERSION_NUMBER).connectors(ONLY_PERIPHERALS))).build();
 		int testValue = 2;
 		BinaryMessage message = new BinaryMessage(BigInteger.valueOf(testValue));
@@ -167,68 +150,12 @@ public class Tester {
 	
 	@Test
 	public void testCannonPrinter() {
-		LogTester logTester = initializeLogTester();
+		LogTester logTester = LoggerTester.initializeLogTester();
 		CannonPrinter cannonPrinter = ((CannonPrinter.Builder) (new CannonPrinter.Builder(TEST_VERSION_NUMBER).connectors(ONLY_PERIPHERALS))).build();
 		String testValue = "super helpful test";
 		StringMessage message = new StringMessage(testValue);
 		message.reach(cannonPrinter, cannonPrinter.getConnector(0));
 		assertTrue(logTester.checkLastMessageContains(testValue));
-	}
-	
-	@Test
-	public void testBroadcast() {
-		Hub hub = goodBuilder.build();
-		SisterPrinter sisterPrinter = ((SisterPrinter.Builder)(new SisterPrinter.Builder(TEST_VERSION_NUMBER).connectors(ONLY_PERIPHERALS))).build();
-		CannonPrinter cannonPrinter = ((CannonPrinter.Builder)(new CannonPrinter.Builder(TEST_VERSION_NUMBER).connectors(ONLY_PERIPHERALS))).build();
-		GoAmateur goAmateur = ((GoAmateur.Builder)(new GoAmateur.Builder(TEST_VERSION_NUMBER).connectors(ONLY_PERIPHERALS))).build();
-		broadcast(Arrays.asList(hub, sisterPrinter, cannonPrinter, goAmateur), MESSAGES, initializeLogTester());
-	}
-	
-	private void broadcast(List<Device> devices, List<Message> messages, LogTester logTester) {
-		for (Message message : messages) {
-			for (Device device : devices) {
-				message.reach(device, device.getConnector(0));
-				assertTrue(logTester.checkLastLevel(Level.INFO));
-				if (device.getDeviceClass() == DeviceClass.HUB) {
-					assertTrue(logTester.checkLastMessageContains(Hub.NOT_YET_SUPPORTED_MESSAGE));
-				} else if (device.getDeviceClass() == DeviceClass.PRINTER) {
-					assertTrue(logTester.checkLastMessageContains("printer has printed"));
-				} else {
-					assertTrue(logTester.checkLastMessageContains("not"));
-				}
-			}
-		}
-	}
-	
-	// Adding appender to global logger for testing purposes
-	// http://stackoverflow.com/a/1834789
-	public class LogTester extends Handler {
-		private String message = "";
-	    private Level level = Level.ALL;
-	    
-	    public boolean checkLastMessageContains(String expected) {
-	        return message.contains(expected);
-	    }
-	    
-	    public boolean checkLastLevel(Level expected) {
-	        return level.equals(expected);
-	    }
-
-	    @Override
-	    public void publish(LogRecord record) {
-	    	message = record.getMessage();
-	        level = record.getLevel();
-	    }
-
-		@Override
-		public void flush() {
-			// Do Nothing
-		}
-
-		@Override
-		public void close() throws SecurityException {
-			// Do Nothing			
-		}
 	}
 	
 }

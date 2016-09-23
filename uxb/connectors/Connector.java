@@ -2,6 +2,7 @@ package eecs293.uxb.connectors;
 
 import java.util.Optional;
 
+import eecs293.uxb.connectors.ConnectionException.ErrorCode;
 import eecs293.uxb.devices.Device;
 import eecs293.uxb.messages.Message;
 
@@ -40,7 +41,31 @@ public final class Connector {
 		return peer;
 	}
 	
+	public void setPeer(Connector peer) throws ConnectionException {
+		if (peer == null) {
+			throw new NullPointerException("Cannot add a null peer to a connector.");
+		}
+		
+		if (this.getPeer().isPresent()) {
+			throw new ConnectionException(this, ErrorCode.CONNECTOR_BUSY);
+		}
+		
+		if (this.getType() == peer.getType()) {
+			throw new ConnectionException(this, ErrorCode.CONNECTOR_MISMATCH);
+		}
+		
+		if (this.isReachable(peer.getDevice())) {
+			throw new ConnectionException(this, ErrorCode.CONNECTION_CYCLE);
+		}
+		
+		this.peer = Optional.of(peer);
+	}
+	
 	public void recv(Message message) {
 		message.reach(device, this);
+	}
+	
+	public boolean isReachable(Device device) {
+		return this.getDevice().isReachable(device);
 	}
 }

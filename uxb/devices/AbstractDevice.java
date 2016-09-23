@@ -3,10 +3,13 @@ package eecs293.uxb.devices;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import eecs293.uxb.connectors.Connector;
 import eecs293.uxb.connectors.Connector.Type;
@@ -143,6 +146,54 @@ public abstract class AbstractDevice<T extends AbstractDevice.Builder<T>> implem
 			return connectors.get(index);
 		}
 		return null;
+	}
+	
+	@Override
+	public Set<Device> peerDevices() {
+		return getConnectors()
+				.stream()
+				.filter(connector -> connector.getPeer().isPresent())
+				.map(connector -> connector.getPeer().get().getDevice())
+				.collect(Collectors.toSet());
+	}
+	
+	@Override
+	public Set<Device> reachableDevices() {
+		Set<Device> currentLayer = peerDevices();
+		while(true) {
+			Set<Device> nextLayer = getNextLayer(currentLayer);
+			if (layerDidNotExpand(currentLayer, nextLayer)) {
+				return nextLayer;
+			}
+			currentLayer = nextLayer;
+		}
+	}
+	
+	@Override
+	public boolean isReachable(Device device) {
+		Set<Device> currentLayer = peerDevices();
+		while(true) {
+			if (currentLayer.contains(device)) {
+				return true;
+			}
+			Set<Device> nextLayer = getNextLayer(currentLayer);
+			if (layerDidNotExpand(currentLayer, nextLayer)) {
+				return false;
+			}
+			currentLayer = nextLayer;
+		}
+	}
+	
+	private boolean layerDidNotExpand(Set<Device> currentLayer, Set<Device> nextLayer) {
+		return currentLayer.size() == nextLayer.size();
+	}
+
+	private Set<Device> getNextLayer(Set<Device> currentLayer) {
+		Set<Device> nextLayer = new HashSet<Device>(currentLayer);
+		currentLayer
+				.stream()
+				.forEach(device -> nextLayer.addAll(device.peerDevices()));
+		return nextLayer;
 	}
 	
 	/**
