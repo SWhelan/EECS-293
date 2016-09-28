@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.Stack;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -30,6 +31,8 @@ public abstract class AbstractDevice<T extends AbstractDevice.Builder<T>> implem
 	private final Optional<Integer> productCode;
 	private final Optional<BigInteger> serialNumber;
 	private final List<Connector> connectors;
+	
+	private GraphTraversalStatus status = GraphTraversalStatus.UNEXPLORED;
 	
 	/**
 	 * Builds an device. Devices that extend AbstractDevice also should extend this
@@ -148,6 +151,16 @@ public abstract class AbstractDevice<T extends AbstractDevice.Builder<T>> implem
 	}
 	
 	@Override
+	public void setStatus(GraphTraversalStatus status) {
+		this.status = status;
+	}
+	
+	@Override
+	public boolean isUnexplored() {
+		return this.status == GraphTraversalStatus.UNEXPLORED;
+	}
+	
+	@Override
 	public Set<Device> peerDevices() {
 		return getConnectors()
 				.stream()
@@ -158,41 +171,71 @@ public abstract class AbstractDevice<T extends AbstractDevice.Builder<T>> implem
 	
 	@Override
 	public Set<Device> reachableDevices() {
-		Set<Device> currentLayer = peerDevices();
-		while(true) {
-			Set<Device> nextLayer = getNextLayer(currentLayer);
-			if (layerDidNotExpand(currentLayer, nextLayer)) {
-				return nextLayer;
-			}
-			currentLayer = nextLayer;
-		}	
+		return depthFirstSearch(this, null).getDevices();
 	}
 	
 	@Override
 	public boolean isReachable(Device device) {
-		Set<Device> currentLayer = peerDevices();
-		while(true) {
-			if (currentLayer.contains(device)) {
-				return true;
-			}
-			Set<Device> nextLayer = getNextLayer(currentLayer);
-			if (layerDidNotExpand(currentLayer, nextLayer)) {
-				return false;
-			}
-			currentLayer = nextLayer;
-		}
+		return depthFirstSearch(this, device).isReachable();
 	}
 	
-	private boolean layerDidNotExpand(Set<Device> currentLayer, Set<Device> nextLayer) {
-		return currentLayer.size() == nextLayer.size();
+	private class GraphTraversalResult {
+		
+		private boolean isReachable = false;
+		private Set<Device> devices = null;
+		
+		public GraphTraversalResult(boolean isReachable, Set<Device> devices) {
+			this.isReachable = isReachable;
+			this.devices = devices;
+		}
+
+		public boolean isReachable() {
+			return isReachable;
+		}
+
+		public Set<Device> getDevices() {
+			return devices;
+		}
+		
+	}
+	
+	/**
+	 * @param device the starting device for the depth first search
+	 * @param target 
+	 *   pass in null to get all of the reachable devices
+	 *   otherwise pass in the device you are looking for
+	 * @return an object containing 
+	 *  - a boolean flag for weather or not the target node was found
+	 *  - the nodes explored up to termination
+	 */
+	private GraphTraversalResult depthFirstSearch(Device device, Device target) {
+		Set<Device> explored = new HashSet<>();
+		Stack<Device> unexplored = new Stack<>();
+		unexplored.push(device);
+		while (!unexplored.isEmpty()) {
+			Device current = unexplored.pop();
+			explored.add(current);
+			if (targetHasBeenFound(current, target)) {
+				resetAfterTraversal(explored);
+				return new GraphTraversalResult(true, explored);
+			}
+			if (current.isUnexplored()) {
+				current.setStatus(GraphTraversalStatus.EXPLORED);
+				for (Device neighboor : current.peerDevices()) {
+					unexplored.push(neighboor);
+				}
+			}
+		}
+		resetAfterTraversal(explored);
+		return new GraphTraversalResult(false, explored);
+	}
+	
+	private boolean targetHasBeenFound(Device current, Device target) {
+		return target != null && current.equals(target);
 	}
 
-	private Set<Device> getNextLayer(Set<Device> currentLayer) {
-		Set<Device> nextLayer = new HashSet<Device>(currentLayer);
-		currentLayer
-				.stream()
-				.forEach(device -> nextLayer.addAll(device.peerDevices()));
-		return nextLayer;
+	private void resetAfterTraversal(Set<Device> devices) {
+		devices.forEach(e -> e.setStatus(GraphTraversalStatus.UNEXPLORED));
 	}
 	
 	/**

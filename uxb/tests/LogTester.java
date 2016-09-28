@@ -7,38 +7,37 @@ import java.util.logging.Logger;
 
 import eecs293.uxb.devices.AbstractDevice;
 
-public class LoggerTester {
+public class LogTester {
 	
-	private static LoggerTester loggerTester;
+	private static LogTester logTester;
 	
-	protected LogTester logTester = null;
+	protected LogHandler logHandler = null;
 	
-	public static LoggerTester getInstance() {
-		if (loggerTester == null) {
-			loggerTester = new LoggerTester();
-		}
-		return loggerTester;
-	}
-	
-	public static LogTester initializeLogTester() {
-		return getInstance().getLogTester();
-	}
-	
-	private LogTester getLogTester() {
+	public static LogTester getInstance() {
 		if (logTester == null) {
-			Logger logger = Logger.getLogger(AbstractDevice.class.getName());
-			logger.setUseParentHandlers(false);		
 			logTester = new LogTester();
-			logger.addHandler(logTester);
 		}
-		
 		return logTester;
 	}
 	
+	public static LogHandler initializeLogTester() {
+		return getInstance().getLogHandler();
+	}
+	
+	private LogHandler getLogHandler() {
+		if (logHandler == null) {
+			Logger logger = Logger.getLogger(AbstractDevice.class.getName());
+			logger.setUseParentHandlers(false);		
+			logHandler = new LogHandler();
+			logger.addHandler(logHandler);
+		}
+		
+		return logHandler;
+	}
 
 	// Adding appender to global logger for testing purposes
 	// http://stackoverflow.com/a/1834789
-	public class LogTester extends Handler {
+	public class LogHandler extends Handler {
 		private String message = "";
 	    private Level level = Level.ALL;
 	    

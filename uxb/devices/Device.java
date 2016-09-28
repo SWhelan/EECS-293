@@ -9,7 +9,12 @@ import eecs293.uxb.connectors.Connector;
 import eecs293.uxb.messages.BinaryMessage;
 import eecs293.uxb.messages.StringMessage;
 
-public interface Device {	
+public interface Device {
+	
+	public static enum GraphTraversalStatus {
+		UNEXPLORED,
+		EXPLORED;
+	}
 	
 	/**
 	 * @return the product code of this device. If the product code is unknown, return an empty optional.
@@ -78,5 +83,17 @@ public interface Device {
 	 * @return true if the argument is connected directly or indirectly to this device, false otherwise.
 	 */
 	public boolean isReachable(Device device);
+
+	/**
+	 * @param status set the status of this device with respect to graph/peer searching
+	 */
+	public void setStatus(GraphTraversalStatus status);
+
+	/**
+	 * @return 
+	 * true if the graph traversal has not yet gotten to this node.
+	 * false if the graph traversal has already seen this node.
+	 */
+	public boolean isUnexplored();
 	
 }
