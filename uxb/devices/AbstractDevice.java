@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -25,7 +24,7 @@ import eecs293.uxb.messages.Message;
  */
 public abstract class AbstractDevice<T extends AbstractDevice.Builder<T>> implements Device {
 	
-	private static final Logger LOGGER = Logger.getLogger(AbstractDevice.class.getName());
+	public static final Logger LOGGER = Logger.getLogger(AbstractDevice.class.getName());
 	
 	private final Integer version;
 	private final Optional<Integer> productCode;
@@ -166,7 +165,7 @@ public abstract class AbstractDevice<T extends AbstractDevice.Builder<T>> implem
 				return nextLayer;
 			}
 			currentLayer = nextLayer;
-		}
+		}	
 	}
 	
 	@Override
@@ -197,7 +196,6 @@ public abstract class AbstractDevice<T extends AbstractDevice.Builder<T>> implem
 	}
 	
 	/**
-	 * 
 	 * Validates/determines if the message can be received on
 	 * the specified connector. 
 	 * 
@@ -208,23 +206,17 @@ public abstract class AbstractDevice<T extends AbstractDevice.Builder<T>> implem
 	 */
 	public void validateCanBeReceived(Message message, Connector connector) 
 			throws NullPointerException, IllegalStateException {
-		if (message == null || connector == null) {
-			throw new NullPointerException();
+		if (message == null) {
+			throw new NullPointerException("The message was null and could not be sent.");
+		}
+		
+		if (connector == null) {
+			throw new NullPointerException("The connector was null and the message could not be sent.");
 		}
 		
 		if (!getConnectors().contains(connector)) {
-			throw new IllegalStateException();
+			throw new IllegalStateException("The connector is not connected to this device. The message could not be sent.");
 		}
-	}
-	
-	/**
-	 * The default logging statement for devices. 
-	 * Uses the global logger and the INFO level.
-	 * 
-	 * @param message text to log
-	 */
-	public static void infoLog(String message) {
-		LOGGER.log(Level.INFO, message);
 	}
 
 }

@@ -141,7 +141,7 @@ public class Tester {
 	@Test
 	public void testSisterPrinter() {
 		LogTester logTester = LoggerTester.initializeLogTester();
-		SisterPrinter sisterPrinter = ((SisterPrinter.Builder) (new SisterPrinter.Builder(TEST_VERSION_NUMBER).connectors(ONLY_PERIPHERALS))).build();
+		SisterPrinter sisterPrinter = new SisterPrinter.Builder(TEST_VERSION_NUMBER).connectors(ONLY_PERIPHERALS).build();
 		int testValue = 2;
 		BinaryMessage message = new BinaryMessage(BigInteger.valueOf(testValue));
 		message.reach(sisterPrinter, sisterPrinter.getConnector(0));
@@ -151,7 +151,7 @@ public class Tester {
 	@Test
 	public void testCannonPrinter() {
 		LogTester logTester = LoggerTester.initializeLogTester();
-		CannonPrinter cannonPrinter = ((CannonPrinter.Builder) (new CannonPrinter.Builder(TEST_VERSION_NUMBER).connectors(ONLY_PERIPHERALS))).build();
+		CannonPrinter cannonPrinter = new CannonPrinter.Builder(TEST_VERSION_NUMBER).connectors(ONLY_PERIPHERALS).build();
 		String testValue = "super helpful test";
 		StringMessage message = new StringMessage(testValue);
 		message.reach(cannonPrinter, cannonPrinter.getConnector(0));

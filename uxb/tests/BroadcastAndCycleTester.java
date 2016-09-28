@@ -27,7 +27,7 @@ public class BroadcastAndCycleTester extends Tester {
 	@Test
 	public void testSetPeer() {
 		Hub hub = goodBuilder.build();
-		SisterPrinter sisterPrinter = ((SisterPrinter.Builder)(new SisterPrinter.Builder(TEST_VERSION_NUMBER).connectors(ONLY_PERIPHERALS))).build();
+		SisterPrinter sisterPrinter = new SisterPrinter.Builder(TEST_VERSION_NUMBER).connectors(ONLY_PERIPHERALS).build();
 		try {
 			sisterPrinter.getConnector(0).setPeer(hub.getConnector(0));
 		} catch (ConnectionException e) {
@@ -55,7 +55,7 @@ public class BroadcastAndCycleTester extends Tester {
 		Hub hub2 = goodBuilder.build();
 		Hub hub3 = goodBuilder.build();
 		Hub hub4 = goodBuilder.build();
-		SisterPrinter sisterPrinter = ((SisterPrinter.Builder)(new SisterPrinter.Builder(TEST_VERSION_NUMBER).connectors(ONLY_PERIPHERALS))).build();
+		SisterPrinter sisterPrinter = new SisterPrinter.Builder(TEST_VERSION_NUMBER).connectors(ONLY_PERIPHERALS).build();
 		try {
 			sisterPrinter.getConnector(0).setPeer(hub1.getConnector(0));
 			hub1.getConnector(1).setPeer(hub2.getConnector(0));
@@ -80,9 +80,9 @@ public class BroadcastAndCycleTester extends Tester {
 	@Test
 	public void testBroadcast() {
 		Hub hub = goodBuilder.build();
-		SisterPrinter sisterPrinter = ((SisterPrinter.Builder)(new SisterPrinter.Builder(TEST_VERSION_NUMBER).connectors(ONLY_PERIPHERALS))).build();
-		CannonPrinter cannonPrinter = ((CannonPrinter.Builder)(new CannonPrinter.Builder(TEST_VERSION_NUMBER).connectors(ONLY_PERIPHERALS))).build();
-		GoAmateur goAmateur = ((GoAmateur.Builder)(new GoAmateur.Builder(TEST_VERSION_NUMBER).connectors(ONLY_PERIPHERALS))).build();
+		SisterPrinter sisterPrinter = new SisterPrinter.Builder(TEST_VERSION_NUMBER).connectors(ONLY_PERIPHERALS).build();
+		CannonPrinter cannonPrinter = new CannonPrinter.Builder(TEST_VERSION_NUMBER).connectors(ONLY_PERIPHERALS).build();
+		GoAmateur goAmateur = new GoAmateur.Builder(TEST_VERSION_NUMBER).connectors(ONLY_PERIPHERALS).build();
 		broadcast(Arrays.asList(hub, sisterPrinter, cannonPrinter, goAmateur), MESSAGES, LoggerTester.initializeLogTester());
 	}
 	

@@ -9,9 +9,9 @@ import eecs293.uxb.devices.AbstractDevice;
  * 
  * @author Sarah Whelan
  */
-public abstract class AbstractPeripheral<T extends AbstractPeripheral.Builder<T>> extends AbstractDevice<AbstractPeripheral.Builder<T>> {
+public abstract class AbstractPeripheral<T extends AbstractPeripheral.Builder<T>> extends AbstractDevice<T> {
 	
-	public static abstract class Builder<T> extends AbstractDevice.Builder<AbstractPeripheral.Builder<T>> {
+	public static abstract class Builder<T> extends AbstractDevice.Builder<T> {
 		private static final String NOT_ALL_CONNECTORS_ARE_PERIPHERALS = "Not all connectors are of type peripheral.";
 	
 		public Builder(Integer version) {

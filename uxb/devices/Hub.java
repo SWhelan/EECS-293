@@ -1,5 +1,7 @@
 package eecs293.uxb.devices;
 
+import java.util.logging.Level;
+
 import eecs293.uxb.connectors.Connector;
 import eecs293.uxb.messages.BinaryMessage;
 import eecs293.uxb.messages.StringMessage;
@@ -63,13 +65,13 @@ public class Hub extends AbstractDevice<Hub.Builder> {
 	@Override
 	public void recv(StringMessage message, Connector connector) {
 		validateCanBeReceived(message, connector);
-		infoLog(NOT_YET_SUPPORTED_MESSAGE);
+		AbstractDevice.LOGGER.log(Level.INFO, NOT_YET_SUPPORTED_MESSAGE);
 	}
 
 	@Override
 	public void recv(BinaryMessage message, Connector connector) {
 		validateCanBeReceived(message, connector);
-		infoLog(NOT_YET_SUPPORTED_MESSAGE);
+		AbstractDevice.LOGGER.log(Level.INFO, NOT_YET_SUPPORTED_MESSAGE);
 	}
 
 }

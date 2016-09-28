@@ -1,6 +1,9 @@
 package eecs293.uxb.devices.peripherals.video;
 
+import java.util.logging.Level;
+
 import eecs293.uxb.connectors.Connector;
+import eecs293.uxb.devices.AbstractDevice;
 import eecs293.uxb.messages.BinaryMessage;
 import eecs293.uxb.messages.StringMessage;
 
@@ -36,7 +39,7 @@ public class GoAmateur extends AbstractVideo<GoAmateur.Builder> {
 			.append(message.getString())
 			.append("\nConnector Index: ")
 			.append(connector.getIndex());
-		infoLog(builder.toString());
+		AbstractDevice.LOGGER.log(Level.INFO, builder.toString());
 	}
 
 	@Override
@@ -45,6 +48,6 @@ public class GoAmateur extends AbstractVideo<GoAmateur.Builder> {
 		StringBuilder builder = new StringBuilder();
 		builder.append("GoAmateur is not yet active: ")
 			.append(message.getValue());
-		infoLog(builder.toString());
+		AbstractDevice.LOGGER.log(Level.INFO, builder.toString());
 	}
 }

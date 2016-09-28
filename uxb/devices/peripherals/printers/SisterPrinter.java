@@ -1,6 +1,10 @@
 package eecs293.uxb.devices.peripherals.printers;
 
+import java.math.BigInteger;
+import java.util.logging.Level;
+
 import eecs293.uxb.connectors.Connector;
+import eecs293.uxb.devices.AbstractDevice;
 import eecs293.uxb.messages.BinaryMessage;
 import eecs293.uxb.messages.StringMessage;
 
@@ -36,19 +40,16 @@ public class SisterPrinter extends AbstractPrinter<SisterPrinter.Builder> {
 			.append(message.getString())
 			.append("\nPrinter serial number: ")
 			.append(this.getSerialNumber());
-		infoLog(builder.toString());
+		AbstractDevice.LOGGER.log(Level.INFO, builder.toString());
 	}
 
 	@Override
 	public void recv(BinaryMessage message, Connector connector) {
 		validateCanBeReceived(message, connector);
-		// If there is not a product code don't add to the sum
-		int productCode = this.getProductCode().isPresent() ? this.getProductCode().get() : 0;
-		int sum = message.getValue().intValue() + productCode;
 		StringBuilder builder = new StringBuilder();
 		builder.append("Sister printer has printed the binary message: ")
-			.append(sum);
-		infoLog(builder.toString());
+			.append(message.getValue().add(BigInteger.valueOf(this.getProductCode().orElse(0))).toString());
+		AbstractDevice.LOGGER.log(Level.INFO, builder.toString());
 	}
 
 }
