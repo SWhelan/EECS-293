@@ -161,11 +161,13 @@ public abstract class AbstractDevice<T extends AbstractDevice.Builder<T>> implem
 	}
 	
 	@Override
-	public Set<Device> peerDevices() {
+	public Set<Device> peerDevices() {		
 		return getConnectors()
 				.stream()
-				.filter(connector -> connector.getPeer().isPresent())
-				.map(connector -> connector.getPeer().get().getDevice())
+				.map(Connector::getPeer)
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.map(Connector::getDevice)
 				.collect(Collectors.toSet());
 	}
 	

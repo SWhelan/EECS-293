@@ -1,5 +1,6 @@
 package eecs293.uxb.connectors;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import eecs293.uxb.connectors.ConnectionException.ErrorCode;
@@ -42,9 +43,7 @@ public final class Connector {
 	}
 	
 	public void setPeer(Connector peer) throws ConnectionException {
-		if (peer == null) {
-			throw new NullPointerException("Cannot add a null peer to a connector.");
-		}
+		Objects.requireNonNull(peer, "Cannot add a null peer to a connector.");
 		
 		if (this.getPeer().isPresent()) {
 			throw new ConnectionException(this, ErrorCode.CONNECTOR_BUSY);

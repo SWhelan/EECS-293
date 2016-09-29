@@ -172,11 +172,11 @@ public class Tester {
 	@Test
 	public void testIsReachable() {
 		Hub hub = goodBuilder.build();
-		SisterPrinter sisterPrinter = ((SisterPrinter.Builder)(new SisterPrinter.Builder(TEST_VERSION_NUMBER).connectors(ONLY_PERIPHERALS))).build();
+		SisterPrinter sisterPrinter = new SisterPrinter.Builder(TEST_VERSION_NUMBER).connectors(ONLY_PERIPHERALS).build();
 		try {
 			sisterPrinter.getConnector(0).setPeer(hub.getConnector(0));
 		} catch (ConnectionException e) {
-			assertTrue("This is not supposed to throw an exception.", false);
+			fail("This is not supposed to throw an exception.");
 		}
 		
 	}
