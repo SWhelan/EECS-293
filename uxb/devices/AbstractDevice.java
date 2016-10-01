@@ -233,7 +233,7 @@ public abstract class AbstractDevice<T extends AbstractDevice.Builder<T>> implem
 	}
 	
 	private boolean targetHasBeenFound(Device current, Optional<Device> target) {
-		return target.isPresent() && current.equals(target);
+		return target.isPresent() && current.equals(target.get());
 	}
 
 	private void resetAfterTraversal(Set<Device> devices) {
