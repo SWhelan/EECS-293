@@ -173,12 +173,12 @@ public abstract class AbstractDevice<T extends AbstractDevice.Builder<T>> implem
 	
 	@Override
 	public Set<Device> reachableDevices() {
-		return depthFirstSearch(this, null).getDevices();
+		return depthFirstSearch(this, Optional.empty()).getDevices();
 	}
 	
 	@Override
 	public boolean isReachable(Device device) {
-		return depthFirstSearch(this, device).isReachable();
+		return depthFirstSearch(this, Optional.of(device)).isReachable();
 	}
 	
 	private class GraphTraversalResult {
