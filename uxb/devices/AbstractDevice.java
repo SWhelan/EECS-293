@@ -201,16 +201,7 @@ public abstract class AbstractDevice<T extends AbstractDevice.Builder<T>> implem
 		
 	}
 	
-	/**
-	 * @param device the starting device for the depth first search
-	 * @param target 
-	 *   pass in null to get all of the reachable devices
-	 *   otherwise pass in the device you are looking for
-	 * @return an object containing 
-	 *  - a boolean flag for weather or not the target node was found
-	 *  - the nodes explored up to termination
-	 */
-	private GraphTraversalResult depthFirstSearch(Device device, Device target) {
+	private GraphTraversalResult depthFirstSearch(Device device, Optional<Device> target) {
 		Set<Device> explored = new HashSet<>();
 		Stack<Device> unexplored = new Stack<>();
 		unexplored.push(device);
@@ -218,22 +209,31 @@ public abstract class AbstractDevice<T extends AbstractDevice.Builder<T>> implem
 			Device current = unexplored.pop();
 			explored.add(current);
 			if (targetHasBeenFound(current, target)) {
-				resetAfterTraversal(explored);
-				return new GraphTraversalResult(true, explored);
+				return endTraversal(true, explored);
 			}
-			if (current.isUnexplored()) {
-				current.setStatus(GraphTraversalStatus.EXPLORED);
-				for (Device neighboor : current.peerDevices()) {
-					unexplored.push(neighboor);
-				}
-			}
+			addNeighboorsToUnexplored(unexplored, current);
 		}
-		resetAfterTraversal(explored);
-		return new GraphTraversalResult(false, explored);
+		return endTraversal(false, explored);
 	}
 	
-	private boolean targetHasBeenFound(Device current, Device target) {
-		return target != null && current.equals(target);
+	// TODO target device to optional, move this whole thing to device interface, remove status and instead pass around the explored set
+
+	private GraphTraversalResult endTraversal(boolean targetFound, Set<Device> explored) {
+		resetAfterTraversal(explored);
+		return new GraphTraversalResult(targetFound, explored);
+	}
+
+	private void addNeighboorsToUnexplored(Stack<Device> unexplored, Device current) {
+		if (current.isUnexplored()) {
+			current.setStatus(GraphTraversalStatus.EXPLORED);
+			for (Device neighboor : current.peerDevices()) {
+				unexplored.push(neighboor);
+			}
+		}
+	}
+	
+	private boolean targetHasBeenFound(Device current, Optional<Device> target) {
+		return target.isPresent() && current.equals(target);
 	}
 
 	private void resetAfterTraversal(Set<Device> devices) {
