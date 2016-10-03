@@ -1,9 +1,10 @@
 package eecs293.uxb.devices;
 
-import java.util.logging.Level;
+import java.util.Optional;
 
 import eecs293.uxb.connectors.Connector;
 import eecs293.uxb.messages.BinaryMessage;
+import eecs293.uxb.messages.Message;
 import eecs293.uxb.messages.StringMessage;
 
 /**
@@ -64,14 +65,17 @@ public class Hub extends AbstractDevice<Hub.Builder> {
 
 	@Override
 	public void recv(StringMessage message, Connector connector) {
-		validateCanBeReceived(message, connector);
-		AbstractDevice.LOGGER.log(Level.INFO, NOT_YET_SUPPORTED_MESSAGE);
+		hubRecv(message, connector);
 	}
 
 	@Override
 	public void recv(BinaryMessage message, Connector connector) {
-		validateCanBeReceived(message, connector);
-		AbstractDevice.LOGGER.log(Level.INFO, NOT_YET_SUPPORTED_MESSAGE);
+		hubRecv(message, connector);
 	}
-
+	
+	private void hubRecv(Message message, Connector connector) {
+		validateCanBeReceived(message, connector);
+		forwardMessage(message, Optional.of(connector));
+	}
+	
 }

@@ -53,13 +53,17 @@ public final class Connector {
 			throw new ConnectionException(this, ErrorCode.CONNECTOR_MISMATCH);
 		}
 		
-		if (this.isReachable(peer.getDevice())) {
+		if (thereIsACycle(peer)) {
 			throw new ConnectionException(this, ErrorCode.CONNECTION_CYCLE);
 		}
 		
 		this.peer = Optional.of(peer);
 	}
 	
+	private boolean thereIsACycle(Connector peer) {
+		return this.isReachable(peer.getDevice()) || peer.isReachable(this.getDevice()); 
+	}
+
 	public void recv(Message message) {
 		message.reach(device, this);
 	}

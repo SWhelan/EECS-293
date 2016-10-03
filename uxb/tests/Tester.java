@@ -10,13 +10,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.logging.Level;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import eecs293.uxb.connectors.ConnectionException;
+import eecs293.uxb.connectors.ConnectionException.ErrorCode;
 import eecs293.uxb.connectors.Connector;
 import eecs293.uxb.connectors.Connector.Type;
 import eecs293.uxb.devices.AbstractDevice;
@@ -38,9 +38,10 @@ public class Tester {
 	public static final int TEST_PRODUCT_CODE = 7;
 	public static final BigInteger TEST_SERIAL_NUMBER = BigInteger.valueOf(9);
 
-	// Tests depend on the order of this list.
+	// Tests depend on the order of these lists.
 	public static final List<Type> CONNECTOR_TYPES = Arrays.asList(Connector.Type.COMPUTER, Connector.Type.PERIPHERAL);
 	public static final List<Type> ONLY_PERIPHERALS = Arrays.asList(Connector.Type.PERIPHERAL, Connector.Type.PERIPHERAL);
+	public static final List<Type> ONLY_COMPUTERS = Arrays.asList(Connector.Type.COMPUTER, Connector.Type.COMPUTER);
 	public static final List<Message> MESSAGES = Arrays.asList(
 			new StringMessage("The first message is a string."), 
 			new BinaryMessage(BigInteger.valueOf(2)),
@@ -49,20 +50,32 @@ public class Tester {
 			new BinaryMessage(BigInteger.valueOf(5)));
 	
 	public Hub.Builder badBuilder;
-	public static Hub.Builder goodBuilder;
+	public Hub.Builder goodBuilder;
+	public Hub hub;
+	public SisterPrinter sisterPrinter;
+	public CannonPrinter cannonPrinter;
+	public GoAmateur goAmateur;
 	
 	// Runs once per test before the test is run.
 	@Before
 	public void setUp() {
 		badBuilder = new Builder(TEST_VERSION_NUMBER);
 		goodBuilder = new Builder(TEST_VERSION_NUMBER).connectors(CONNECTOR_TYPES);
+		hub = goodBuilder.build();
+		sisterPrinter = new SisterPrinter.Builder(TEST_VERSION_NUMBER).connectors(ONLY_PERIPHERALS).build();
+		cannonPrinter = new CannonPrinter.Builder(TEST_VERSION_NUMBER).connectors(ONLY_PERIPHERALS).build();
+		goAmateur = new GoAmateur.Builder(TEST_VERSION_NUMBER).connectors(ONLY_PERIPHERALS).build();
 	}
 	
 	// Runs once per test after the test completes.
 	@After
 	public void tearDown() {
-		this.badBuilder = null;
+		badBuilder = null;
 		goodBuilder = null;
+		hub = null;
+		sisterPrinter = null;
+		cannonPrinter = null;
+		goAmateur = null;
 	}
 	
 	@Test
@@ -117,7 +130,6 @@ public class Tester {
 	
 	@Test
 	public void testGetConnectorOutOfBounds() {
-    	Hub hub = goodBuilder.build();   
     	assertEquals(hub.getConnector(-1), null);
     	assertEquals(hub.getConnector(2), null);
 	}
@@ -143,13 +155,9 @@ public class Tester {
 		Hub hub = goodBuilder.serialNumber(TEST_SERIAL_NUMBER).build();    	
     	assertEquals(hub.getSerialNumber().get(), TEST_SERIAL_NUMBER);
 	}
-	
+
 	@Test
 	public void testBroadcast() {
-		Hub hub = goodBuilder.build();
-		SisterPrinter sisterPrinter = new SisterPrinter.Builder(TEST_VERSION_NUMBER).connectors(ONLY_PERIPHERALS).build();
-		CannonPrinter cannonPrinter = new CannonPrinter.Builder(TEST_VERSION_NUMBER).connectors(ONLY_PERIPHERALS).build();
-		GoAmateur goAmateur = new GoAmateur.Builder(TEST_VERSION_NUMBER).connectors(ONLY_PERIPHERALS).build();
 		broadcast(Arrays.asList(hub, sisterPrinter, cannonPrinter, goAmateur), MESSAGES, LogTester.initializeLogTester());
 	}
 	
@@ -157,22 +165,12 @@ public class Tester {
 		for (Message message : messages) {
 			for (Device device : devices) {
 				message.reach(device, device.getConnector(0));
-				assertTrue(logTester.checkLastLevel(Level.INFO));
-				if (device.getDeviceClass() == DeviceClass.HUB) {
-					assertTrue(logTester.checkLastMessageContains(Hub.NOT_YET_SUPPORTED_MESSAGE));
-				} else if (device.getDeviceClass() == DeviceClass.PRINTER) {
-					assertTrue(logTester.checkLastMessageContains("printer has printed"));
-				} else {
-					assertTrue(logTester.checkLastMessageContains("not"));
-				}
 			}
 		}
 	}
 	
 	@Test
 	public void testIsReachable() {
-		Hub hub = goodBuilder.build();
-		SisterPrinter sisterPrinter = new SisterPrinter.Builder(TEST_VERSION_NUMBER).connectors(ONLY_PERIPHERALS).build();
 		try {
 			sisterPrinter.getConnector(0).setPeer(hub.getConnector(0));
 		} catch (ConnectionException e) {
@@ -183,8 +181,6 @@ public class Tester {
 	
 	@Test
 	public void testSetPeer() {
-		Hub hub = goodBuilder.build();
-		SisterPrinter sisterPrinter = new SisterPrinter.Builder(TEST_VERSION_NUMBER).connectors(ONLY_PERIPHERALS).build();
 		try {
 			sisterPrinter.getConnector(0).setPeer(hub.getConnector(0));
 		} catch (ConnectionException e) {
@@ -197,12 +193,42 @@ public class Tester {
 		Set<Device> temp = sisterPrinter.peerDevices();
 		assertTrue(temp.contains(hub));
 		assertTrue(temp.size() == 1);
-		
+	}
+	
+	@Test
+	public void testSetPeerBusy() {
 		try {
+			sisterPrinter.getConnector(0).setPeer(hub.getConnector(0));
 			sisterPrinter.getConnector(0).setPeer(hub.getConnector(0));
 			fail("This is supposed to throw an exception.");
 		} catch (ConnectionException e) {
 			assertEquals(e.getClass(), ConnectionException.class);
+			assertEquals(e.getErrorCode(), ErrorCode.CONNECTOR_BUSY);
+		}
+	}
+	
+	@Test
+	public void testSetPeerMismatch() {
+		try {
+			sisterPrinter.getConnector(1).setPeer(hub.getConnector(1));
+			fail("This is supposed to throw an exception.");
+		} catch (ConnectionException e) {
+			assertEquals(e.getClass(), ConnectionException.class);
+			assertEquals(e.getErrorCode(), ErrorCode.CONNECTOR_MISMATCH);
+		}
+	}
+	
+	@Test
+	public void testSetPeerCycle() {
+		Hub hub = goodBuilder.connectors(Arrays.asList(Connector.Type.COMPUTER, Connector.Type.PERIPHERAL, Connector.Type.COMPUTER)).build();
+		try {
+			hub.getConnector(0).setPeer(sisterPrinter.getConnector(0));
+			sisterPrinter.getConnector(1).setPeer(this.hub.getConnector(0));
+			this.hub.getConnector(1).setPeer(hub.getConnector(2));
+			fail("This is supposed to throw an exception.");
+		} catch (ConnectionException e) {
+			assertEquals(e.getClass(), ConnectionException.class);
+			assertEquals(e.getErrorCode(), ErrorCode.CONNECTION_CYCLE);
 		}
 	}
 	
@@ -212,7 +238,6 @@ public class Tester {
 		Hub hub2 = goodBuilder.build();
 		Hub hub3 = goodBuilder.build();
 		Hub hub4 = goodBuilder.build();
-		SisterPrinter sisterPrinter = new SisterPrinter.Builder(TEST_VERSION_NUMBER).connectors(ONLY_PERIPHERALS).build();
 		try {
 			sisterPrinter.getConnector(0).setPeer(hub1.getConnector(0));
 			hub1.getConnector(1).setPeer(hub2.getConnector(0));
@@ -231,7 +256,58 @@ public class Tester {
 		assertTrue(allReachable.contains(hub2));
 		assertTrue(allReachable.contains(hub3));
 		assertTrue(allReachable.contains(hub4));
-		assertTrue(allReachable.size() == 5); // The all reachable set contains the device itself
+		assertTrue(allReachable.size() == 4);
+	}
+	
+	@Test
+	public void testGoAmateur() {
+		Hub hub1 = goodBuilder.build();
+		Hub hub2 = goodBuilder.build();
+		try {
+			hub1.getConnector(0).setPeer(goAmateur.getConnector(0));
+			goAmateur.getConnector(1).setPeer(hub2.getConnector(0));
+		} catch (ConnectionException e) {
+			fail("This is not supposed to throw an exception.");
+		}
+		MESSAGES.get(1).reach(goAmateur, goAmateur.getConnector(0));
+	}
+	
+	@Test
+	public void testHub() {
+		try {
+			hub.getConnector(0).setPeer(goAmateur.getConnector(0));
+		} catch (ConnectionException e) {
+			fail("This is not supposed to throw an exception.");
+		}
+		MESSAGES.get(0).reach(hub, hub.getConnector(0));
+	}	
+	
+	@Test
+	public void testUXBSystem() {
+		Hub hub1 = goodBuilder.connectors(Arrays.asList(Connector.Type.COMPUTER, Connector.Type.COMPUTER, Connector.Type.PERIPHERAL, Connector.Type.COMPUTER, Connector.Type.COMPUTER)).build();
+		Hub hub2 = goodBuilder.connectors(Arrays.asList(Connector.Type.COMPUTER, Connector.Type.COMPUTER, Connector.Type.COMPUTER, Connector.Type.COMPUTER, Connector.Type.PERIPHERAL)).build();
+		SisterPrinter sisterPrinter1 = new SisterPrinter.Builder(TEST_VERSION_NUMBER).connectors(ONLY_PERIPHERALS).build();
+		SisterPrinter sisterPrinter2 = new SisterPrinter.Builder(TEST_VERSION_NUMBER).connectors(ONLY_PERIPHERALS).build();
+		GoAmateur goAmateur2 = new GoAmateur.Builder(TEST_VERSION_NUMBER).connectors(ONLY_PERIPHERALS).build();
+		try {
+			goAmateur.getConnector(0).setPeer(hub1.getConnector(0));
+			hub1.getConnector(1).setPeer(sisterPrinter1.getConnector(0));
+			hub1.getConnector(2).setPeer(hub2.getConnector(0));
+			hub1.getConnector(3).setPeer(cannonPrinter.getConnector(0));
+			hub1.getConnector(4).setPeer(goAmateur2.getConnector(0));
+			hub2.getConnector(1).setPeer(sisterPrinter1.getConnector(1));
+			sisterPrinter2.getConnector(0).setPeer(hub2.getConnector(2));
+			cannonPrinter.getConnector(1).setPeer(hub2.getConnector(3));
+			
+			// A string message is broadcast from a hub
+			new StringMessage("A String message broadcast from a hub.").reach(hub1, hub1.getConnector(0));
+			// A binary message is sent from a hub along a connector that links the hub to a Webcam
+			new BinaryMessage(BigInteger.ONE).reach(hub1, hub1.getConnector(0));
+			// A binary message broadcast from a hub
+			new BinaryMessage(BigInteger.TEN).reach(hub2, hub2.getConnector(2));
+		} catch (ConnectionException e) {
+			fail("This is not supposed to throw an exception.");
+		}
 	}
 	
 }

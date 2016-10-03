@@ -1,5 +1,7 @@
 package eecs293.uxb.devices.peripherals.video;
 
+import java.math.BigInteger;
+import java.util.Optional;
 import java.util.logging.Level;
 
 import eecs293.uxb.connectors.Connector;
@@ -9,6 +11,8 @@ import eecs293.uxb.messages.StringMessage;
 
 public class GoAmateur extends AbstractVideo<GoAmateur.Builder> {
 	
+	private static final BigInteger BROADCAST_MESSAGE = BigInteger.valueOf(293);
+
 	public static class Builder extends AbstractVideo.Builder<GoAmateur.Builder>  {
 
 		public Builder(Integer version) {
@@ -45,9 +49,6 @@ public class GoAmateur extends AbstractVideo<GoAmateur.Builder> {
 	@Override
 	public void recv(BinaryMessage message, Connector connector) {
 		validateCanBeReceived(message, connector);
-		StringBuilder builder = new StringBuilder();
-		builder.append("GoAmateur is not yet active: ")
-			.append(message.getValue());
-		AbstractDevice.LOGGER.log(Level.INFO, builder.toString());
+		forwardMessage(new BinaryMessage(BROADCAST_MESSAGE), Optional.empty());
 	}
 }

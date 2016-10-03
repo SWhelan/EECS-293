@@ -3,11 +3,9 @@ package eecs293.uxb.devices;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.Stack;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -31,9 +29,7 @@ public abstract class AbstractDevice<T extends AbstractDevice.Builder<T>> implem
 	private final Optional<Integer> productCode;
 	private final Optional<BigInteger> serialNumber;
 	private final List<Connector> connectors;
-	
-	private GraphTraversalStatus status = GraphTraversalStatus.UNEXPLORED;
-	
+		
 	/**
 	 * Builds an device. Devices that extend AbstractDevice also should extend this
 	 * inner Builder class as well.
@@ -151,16 +147,6 @@ public abstract class AbstractDevice<T extends AbstractDevice.Builder<T>> implem
 	}
 	
 	@Override
-	public void setStatus(GraphTraversalStatus status) {
-		this.status = status;
-	}
-	
-	@Override
-	public boolean isUnexplored() {
-		return this.status == GraphTraversalStatus.UNEXPLORED;
-	}
-	
-	@Override
 	public Set<Device> peerDevices() {		
 		return getConnectors()
 				.stream()
@@ -173,71 +159,14 @@ public abstract class AbstractDevice<T extends AbstractDevice.Builder<T>> implem
 	
 	@Override
 	public Set<Device> reachableDevices() {
-		return depthFirstSearch(this, Optional.empty()).getDevices();
+		Set<Device> allDevices = this.depthFirstSearch(Optional.empty());
+		allDevices.remove(this);
+		return allDevices;
 	}
 	
 	@Override
 	public boolean isReachable(Device device) {
-		return depthFirstSearch(this, Optional.of(device)).isReachable();
-	}
-	
-	private class GraphTraversalResult {
-		
-		private boolean isReachable = false;
-		private Set<Device> devices = null;
-		
-		public GraphTraversalResult(boolean isReachable, Set<Device> devices) {
-			this.isReachable = isReachable;
-			this.devices = devices;
-		}
-
-		public boolean isReachable() {
-			return isReachable;
-		}
-
-		public Set<Device> getDevices() {
-			return devices;
-		}
-		
-	}
-	
-	private GraphTraversalResult depthFirstSearch(Device device, Optional<Device> target) {
-		Set<Device> explored = new HashSet<>();
-		Stack<Device> unexplored = new Stack<>();
-		unexplored.push(device);
-		while (!unexplored.isEmpty()) {
-			Device current = unexplored.pop();
-			explored.add(current);
-			if (targetHasBeenFound(current, target)) {
-				return endTraversal(true, explored);
-			}
-			addNeighboorsToUnexplored(unexplored, current);
-		}
-		return endTraversal(false, explored);
-	}
-	
-	// TODO target device to optional, move this whole thing to device interface, remove status and instead pass around the explored set
-
-	private GraphTraversalResult endTraversal(boolean targetFound, Set<Device> explored) {
-		resetAfterTraversal(explored);
-		return new GraphTraversalResult(targetFound, explored);
-	}
-
-	private void addNeighboorsToUnexplored(Stack<Device> unexplored, Device current) {
-		if (current.isUnexplored()) {
-			current.setStatus(GraphTraversalStatus.EXPLORED);
-			for (Device neighboor : current.peerDevices()) {
-				unexplored.push(neighboor);
-			}
-		}
-	}
-	
-	private boolean targetHasBeenFound(Device current, Optional<Device> target) {
-		return target.isPresent() && current.equals(target.get());
-	}
-
-	private void resetAfterTraversal(Set<Device> devices) {
-		devices.forEach(e -> e.setStatus(GraphTraversalStatus.UNEXPLORED));
+		return this.depthFirstSearch(Optional.of(device)).contains(device);
 	}
 	
 	/**
@@ -249,7 +178,7 @@ public abstract class AbstractDevice<T extends AbstractDevice.Builder<T>> implem
 	 * @throws NullPointerException thrown if the message or connector is null
 	 * @throws IllegalStateException thrown if the connector specified is not connected to this device
 	 */
-	public void validateCanBeReceived(Message message, Connector connector) 
+	protected void validateCanBeReceived(Message message, Connector connector) 
 			throws NullPointerException, IllegalStateException {
 		if (message == null) {
 			throw new NullPointerException("The message was null and could not be sent.");
@@ -262,6 +191,16 @@ public abstract class AbstractDevice<T extends AbstractDevice.Builder<T>> implem
 		if (!getConnectors().contains(connector)) {
 			throw new IllegalStateException("The connector is not connected to this device. The message could not be sent.");
 		}
+	}
+	
+	protected void forwardMessage(Message message, Optional<Connector> connectorToIgnore) {
+		this.getConnectors()
+			.stream()
+			.filter(connector -> !connector.equals(connectorToIgnore.orElse(null)))
+			.map(Connector::getPeer)
+			.filter(Optional::isPresent)
+			.map(Optional::get)
+			.forEach(peer -> message.reach(peer.getDevice(), peer));
 	}
 
 }
