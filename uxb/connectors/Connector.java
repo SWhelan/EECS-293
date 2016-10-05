@@ -58,10 +58,11 @@ public final class Connector {
 		}
 		
 		this.peer = Optional.of(peer);
+		peer.peer = Optional.of(this);
 	}
 	
 	private boolean thereIsACycle(Connector peer) {
-		return this.isReachable(peer.getDevice()) || peer.isReachable(this.getDevice()); 
+		return this.isReachable(peer.getDevice()) || peer.isReachable(this.getDevice());
 	}
 
 	public void recv(Message message) {

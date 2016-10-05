@@ -1,7 +1,6 @@
 package eecs293.uxb.devices.peripherals.video;
 
 import java.math.BigInteger;
-import java.util.Optional;
 import java.util.logging.Level;
 
 import eecs293.uxb.connectors.Connector;
@@ -48,7 +47,6 @@ public class GoAmateur extends AbstractVideo<GoAmateur.Builder> {
 
 	@Override
 	public void recv(BinaryMessage message, Connector connector) {
-		validateCanBeReceived(message, connector);
-		forwardMessage(new BinaryMessage(BROADCAST_MESSAGE), Optional.empty());
+		validateAndForward(new BinaryMessage(BROADCAST_MESSAGE), connector);
 	}
 }

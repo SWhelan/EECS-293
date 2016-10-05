@@ -1,7 +1,6 @@
 package eecs293.uxb.tests;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -188,7 +187,7 @@ public class Tester {
 		}
 		
 		assertTrue(sisterPrinter.isReachable(hub));
-		assertFalse(hub.isReachable(sisterPrinter));
+		assertTrue(hub.isReachable(sisterPrinter));
 		
 		Set<Device> temp = sisterPrinter.peerDevices();
 		assertTrue(temp.contains(hub));
@@ -237,12 +236,14 @@ public class Tester {
 		Hub hub1 = goodBuilder.build();
 		Hub hub2 = goodBuilder.build();
 		Hub hub3 = goodBuilder.build();
-		Hub hub4 = goodBuilder.build();
+		Hub hub4 = goodBuilder.connectors(Arrays.asList(Connector.Type.COMPUTER, Connector.Type.COMPUTER, Connector.Type.PERIPHERAL)).build();
+		
 		try {
 			sisterPrinter.getConnector(0).setPeer(hub1.getConnector(0));
 			hub1.getConnector(1).setPeer(hub2.getConnector(0));
 			hub2.getConnector(1).setPeer(hub3.getConnector(0));
 			hub3.getConnector(1).setPeer(hub4.getConnector(0));
+			goAmateur.getConnector(1).setPeer(hub4.getConnector(1));
 		} catch (ConnectionException e) {
 			fail("This is not supposed to throw an exception.");
 		}
@@ -256,7 +257,13 @@ public class Tester {
 		assertTrue(allReachable.contains(hub2));
 		assertTrue(allReachable.contains(hub3));
 		assertTrue(allReachable.contains(hub4));
-		assertTrue(allReachable.size() == 4);
+		assertTrue(allReachable.contains(goAmateur));
+		assertTrue(sisterPrinter.isReachable(hub1));
+		assertTrue(sisterPrinter.isReachable(hub2));
+		assertTrue(sisterPrinter.isReachable(hub3));
+		assertTrue(sisterPrinter.isReachable(hub4));
+		assertTrue(sisterPrinter.isReachable(goAmateur));
+		assertTrue(allReachable.size() == 5);
 	}
 	
 	@Test
@@ -284,7 +291,7 @@ public class Tester {
 	
 	@Test
 	public void testUXBSystem() {
-		Hub hub1 = goodBuilder.connectors(Arrays.asList(Connector.Type.COMPUTER, Connector.Type.COMPUTER, Connector.Type.PERIPHERAL, Connector.Type.COMPUTER, Connector.Type.COMPUTER)).build();
+		Hub hub1 = goodBuilder.connectors(Arrays.asList(Connector.Type.COMPUTER, Connector.Type.COMPUTER, Connector.Type.PERIPHERAL, Connector.Type.COMPUTER)).build();
 		Hub hub2 = goodBuilder.connectors(Arrays.asList(Connector.Type.COMPUTER, Connector.Type.COMPUTER, Connector.Type.COMPUTER, Connector.Type.COMPUTER, Connector.Type.PERIPHERAL)).build();
 		SisterPrinter sisterPrinter1 = new SisterPrinter.Builder(TEST_VERSION_NUMBER).connectors(ONLY_PERIPHERALS).build();
 		SisterPrinter sisterPrinter2 = new SisterPrinter.Builder(TEST_VERSION_NUMBER).connectors(ONLY_PERIPHERALS).build();
@@ -293,11 +300,9 @@ public class Tester {
 			goAmateur.getConnector(0).setPeer(hub1.getConnector(0));
 			hub1.getConnector(1).setPeer(sisterPrinter1.getConnector(0));
 			hub1.getConnector(2).setPeer(hub2.getConnector(0));
-			hub1.getConnector(3).setPeer(cannonPrinter.getConnector(0));
-			hub1.getConnector(4).setPeer(goAmateur2.getConnector(0));
-			hub2.getConnector(1).setPeer(sisterPrinter1.getConnector(1));
+			hub1.getConnector(3).setPeer(goAmateur2.getConnector(0));
 			sisterPrinter2.getConnector(0).setPeer(hub2.getConnector(2));
-			cannonPrinter.getConnector(1).setPeer(hub2.getConnector(3));
+			cannonPrinter.getConnector(0).setPeer(hub2.getConnector(3));
 			
 			// A string message is broadcast from a hub
 			new StringMessage("A String message broadcast from a hub.").reach(hub1, hub1.getConnector(0));

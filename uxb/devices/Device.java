@@ -1,11 +1,9 @@
 package eecs293.uxb.devices;
 
 import java.math.BigInteger;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.Stack;
 
 import eecs293.uxb.connectors.Connector;
 import eecs293.uxb.messages.BinaryMessage;
@@ -81,34 +79,5 @@ public interface Device {
 	 * @return true if the argument is connected directly or indirectly to this device, false otherwise.
 	 */
 	public boolean isReachable(Device device);
-	
-	/**
-	 * @param target optional target for early termination of search
-	 * @return the set of devices explored until target is found or all of the devices reachable from this device
-	 */
-	public default Set<Device> depthFirstSearch(Optional<Device> target) {
-		Set<Device> explored = new HashSet<>();
-		Stack<Device> unexplored = new Stack<>();
-		unexplored.push(this);
-		while (!unexplored.isEmpty()) {
-			Device current = unexplored.pop();
-			boolean shouldExpandCurrent = explored.add(current);
-			if (targetFound(current, target)) {
-				return explored;
-			}
-			addNeighbors(shouldExpandCurrent, current.peerDevices(), unexplored);
-		}
-		return explored;
-	}
-	
-	public default boolean targetFound(Device current, Optional<Device> target) {
-		return target.isPresent() && current.equals(target.get());
-	}
-
-	public default void addNeighbors(boolean shouldAdd, Set<Device> neighbors, Stack<Device> unexplored) {
-		if (shouldAdd) {
-			unexplored.addAll(neighbors);
-		}
-	}
 	
 }

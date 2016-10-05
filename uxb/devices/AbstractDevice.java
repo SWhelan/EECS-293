@@ -3,9 +3,12 @@ package eecs293.uxb.devices;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.Stack;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -180,23 +183,52 @@ public abstract class AbstractDevice<T extends AbstractDevice.Builder<T>> implem
 	 */
 	protected void validateCanBeReceived(Message message, Connector connector) 
 			throws NullPointerException, IllegalStateException {
-		if (message == null) {
-			throw new NullPointerException("The message was null and could not be sent.");
-		}
-		
-		if (connector == null) {
-			throw new NullPointerException("The connector was null and the message could not be sent.");
-		}
+		Objects.requireNonNull(message, "The message was null and could not be sent.");
+		Objects.requireNonNull(connector, "The connector was null and the message could not be sent.");
 		
 		if (!getConnectors().contains(connector)) {
 			throw new IllegalStateException("The connector is not connected to this device. The message could not be sent.");
 		}
 	}
 	
-	protected void forwardMessage(Message message, Optional<Connector> connectorToIgnore) {
+	/**
+	 * @param target optional target for early termination of search
+	 * @return the set of devices explored until target is found or all of the devices reachable from this device
+	 */
+	public Set<Device> depthFirstSearch(Optional<Device> target) {
+		Set<Device> explored = new HashSet<>();
+		Stack<Device> unexplored = new Stack<>();
+		unexplored.push(this);
+		while (!unexplored.isEmpty()) {
+			Device current = unexplored.pop();
+			boolean shouldExpandCurrent = explored.add(current);
+			if (targetFound(current, target)) {
+				return explored;
+			}
+			addNeighbors(shouldExpandCurrent, current.peerDevices(), unexplored);
+		}
+		return explored;
+	}
+	
+	private boolean targetFound(Device current, Optional<Device> target) {
+		return target.isPresent() && current.equals(target.get());
+	}
+
+	private void addNeighbors(boolean shouldAdd, Set<Device> neighbors, Stack<Device> unexplored) {
+		if (shouldAdd) {
+			unexplored.addAll(neighbors);
+		}
+	}
+	
+	protected void validateAndForward(Message message, Connector connector) {
+		validateCanBeReceived(message, connector);
+		forwardMessage(message, connector);
+	}
+	
+	protected void forwardMessage(Message message, Connector connectorToIgnore) {
 		this.getConnectors()
 			.stream()
-			.filter(connector -> !connector.equals(connectorToIgnore.orElse(null)))
+			.filter(connector -> !connector.equals(connectorToIgnore))
 			.map(Connector::getPeer)
 			.filter(Optional::isPresent)
 			.map(Optional::get)
