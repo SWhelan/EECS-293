@@ -45,7 +45,7 @@ public final class Connector {
 	public void setPeer(Connector peer) throws ConnectionException {
 		Objects.requireNonNull(peer, "Cannot add a null peer to a connector.");
 		
-		if (this.getPeer().isPresent()) {
+		if (this.getPeer().isPresent()) { // TODO Check other peer for busyness
 			throw new ConnectionException(this, ErrorCode.CONNECTOR_BUSY);
 		}
 		
@@ -53,7 +53,7 @@ public final class Connector {
 			throw new ConnectionException(this, ErrorCode.CONNECTOR_MISMATCH);
 		}
 		
-		if (thereIsACycle(peer)) {
+		if (connectionCycleExists(peer)) {
 			throw new ConnectionException(this, ErrorCode.CONNECTION_CYCLE);
 		}
 		
@@ -61,7 +61,7 @@ public final class Connector {
 		peer.peer = Optional.of(this);
 	}
 	
-	private boolean thereIsACycle(Connector peer) {
+	private boolean connectionCycleExists(Connector peer) {
 		return this.isReachable(peer.getDevice()) || peer.isReachable(this.getDevice());
 	}
 

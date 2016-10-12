@@ -1,0 +1,77 @@
+Data Structure Fields:
+- A set of all of the nodes, from here on out referred to as allNodes
+
+Node Fields:
+- A side label with options
+    - UNKOWN
+    - SIDE A
+    - SIDE B
+- Adjacency list of nodes (immediate opponents)
+
+CREATE(x)
+    if x is not already in allNodes
+        set x's label to UNKNOWN
+        add x to allNodes
+    end if
+    // may want to return some indication as to if the node was added or was already there but this was not specified in the assignment sheet
+end
+
+OPPOSE(x, y)
+    VALIDATE(x, y)   
+    opponents <- OPPONENTS(x, y)
+    
+    if opponents is true
+        return
+    end if
+    
+    if opponents is false
+        return error
+    end if
+        
+    if opponents is unkown
+        add y to x's adjacency list
+        add x to y's adjacency list
+    end if
+end
+
+OPPONENTS(x, y)
+    VALIDATE(x, y)
+    if either x or y's labels are UNKNOWN
+        DFS(x, y)
+    end if
+    if either x or y's labels are UNKNOWN
+        return unkown
+    end if
+    if x and y's labels are opposite
+        return true
+    end if
+    if x and y's labels are the same
+        return false
+    end if
+end
+
+VALIDATE(x, y)
+    if x and y are the same node
+        return an error
+    end if
+end
+
+DFS(x, y)
+    set the label for all of the nodes in allNodes to UNKOWN
+    set the label of x to SIDE 1
+    Q <- empty queue
+    place x into Q
+    while there is at least one node in Q
+        current <- extract the first node from Q
+        for each node in the current's adjacency list (call it neighbor)
+            if neighbor's label is UNKNOWN
+                set the neighbor's label to the opposite of current's label (for example if current's label is SIDE 1 set neighbor's to SIDE 2)
+                if neighbor is the same node as y
+                    return
+                end if
+                add neighbor to Q
+            end if
+        end for
+    end while
+end
+ 

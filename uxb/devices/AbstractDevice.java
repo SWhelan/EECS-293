@@ -232,7 +232,7 @@ public abstract class AbstractDevice<T extends AbstractDevice.Builder<T>> implem
 			.map(Connector::getPeer)
 			.filter(Optional::isPresent)
 			.map(Optional::get)
-			.forEach(peer -> message.reach(peer.getDevice(), peer));
+			.forEach(peer -> peer.recv(message));
 	}
 
 }

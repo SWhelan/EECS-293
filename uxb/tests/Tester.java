@@ -307,9 +307,9 @@ public class Tester {
 			// A string message is broadcast from a hub
 			new StringMessage("A String message broadcast from a hub.").reach(hub1, hub1.getConnector(0));
 			// A binary message is sent from a hub along a connector that links the hub to a Webcam
-			new BinaryMessage(BigInteger.ONE).reach(hub1, hub1.getConnector(0));
+			hub1.getConnector(0).recv(new BinaryMessage(BigInteger.ONE));
 			// A binary message broadcast from a hub
-			new BinaryMessage(BigInteger.TEN).reach(hub2, hub2.getConnector(2));
+			hub2.getConnector(2).recv(new BinaryMessage(BigInteger.TEN));
 		} catch (ConnectionException e) {
 			fail("This is not supposed to throw an exception.");
 		}
